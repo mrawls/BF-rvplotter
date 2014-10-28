@@ -26,6 +26,8 @@ There are lots of packages you need. Have fun with that.
 In practice, you will run this twice: once to do the initial BF, and then again
 to properly fit the peaks of each BF with a Gaussian.
 
+There are lots of optional plots you can un-comment for sanity checks.
+
 REQUIRED INFILES
 infiles_BF.txt:	single-column file with one FITS filename (or path+filename) per line
 				1st entry must be for the template star (e.g., arcturus)
@@ -72,15 +74,16 @@ BJD0 = 2455170.514777
 rvstd = -5.19 # from SIMBAD, for Arcturus
 bcvstd = 18.4574 # time dependent! from running IRAF bcvcorr on template spectrum
 # the new log-wavelength array is w1. it will have equal spacing in velocity.
-# you need to specify reasonable values for these or else bad things will happen.
+# please specify reasonable values below or else bad things will happen.
 # note log = log base 10 because SERIOUSLY, come on now.
 w00 = 5400 			# starting wavelength of the log-wave array in Angstroms
 n = 38750 			# desired length of the log-wave vector in pixels (must be EVEN) 
 stepV = 1.7 			# step in velocities in the wavelength vector w1
-m = 171 				# length of BF (must be ODD, for reasons)
+m = 171 				# length of BF (must be ODD)
 r = stepV/2.997924e5 	# put stepV in km/s/pix
 w1 = w00 * np.power((1+r), np.arange(float(n)))
-print ('The new log-wavelength scale spans %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
+print ('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
+print(' ')
 
 # READ IN DATA FROM FITS FILES
 # Read in a text file containing a list of fits files
@@ -124,7 +127,7 @@ nspec = i
 f1.close()
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
-# option to make a plot for sanity; program resumes when user closes plot
+# option to make a plot for sanity
 newspeclist = []
 yoffset = 1
 #plt.axis([w1[0], w1[-1], 0, 27])
@@ -171,7 +174,7 @@ bf_ind = stepV*(np.arange(-m/2, m/2))
 #	yoffset = yoffset + 0.4
 #plt.show()
 
-# FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS AND PLOT THEM
+# FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
 # you have to have pretty decent guesses for it to fit the main peaks.
 # edit the file gaussfit_pars.txt to adjust these values.
 f1 = open(gausspars)
@@ -201,21 +204,23 @@ for i in range(1, nspec):
 	gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # each element is [amp1, rvraw1, rvraw1_err]
 	gauss2[i] = [bffit[0][3], bffit[0][4], bffit[2][4]] # each element is [amp2, rvraw2, rvraw2_err]
 	# later: need to properly assign these to star 1 vs. star 2 based on amplitude !!!
-	print ('%s \t %.5f %.5f %.5f \t %.5f %.5f %.5f' % (filenamelist[i][0:20], 
+	print ('%s \t %.5f %.5f %.5f \t %.5f %.5f %.5f' % (filenamelist[i][-30:], 
 		gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss2[i][0], gauss2[i][1], gauss2[i][2]))
 	# These rvraw values will be overwritten below if bjdfilehasrvs = 1
 	rvraw1.append(bffit[0][1])
 	rvraw2.append(bffit[0][4])
 	rvraw1_err.append(bffit[2][1])
 	rvraw2_err.append(bffit[2][4])
-# optional plot of... something...
+	
+# UNCOMMENT TO PLOT DETAILED VIEW OF EACH SMOOTHED BF
+# (you will need this for guesstimating the location of each Gaussian's peak)
 #yoffset = 0.0
 #for i in range(0, nspec-1):
 #	plt.plot(bf_ind, bffitlist[i][1]+yoffset, color='r')
 #	yoffset = yoffset + 0.4
 #plt.show()
 print(' ')
-print('You MUST manually guesstimate the peak of each Gaussian in the code! (sorry)')
+print('You MUST manually guesstimate the location of each Gaussian\'s peak in %s!' % gausspars)
 print('Until you do, the above values will be WRONG and the plot will look TERRIBLE.')
 print(' ')
 
@@ -227,7 +232,7 @@ rv1_err.append(0); rv2_err.append(0)
 print('*******')
 print('*Note that Star 1 and Star 2 MAY NOT BE properly assigned above.')
 print('For now, you must do this manually; that is why the peak amplitude is printed.')
-print('You will want to update %s manually, set bjdfilehasrvs = True, and run again.' % bjdinfile)
+print('You should update %s manually, set bjdfilehasrvs = True, and run again.' % bjdinfile)
 g1 = open(bjdinfile)
 g2 = open(outfile, 'w')
 # Decide if we should calculate the RVs in place or read them from an updated bjdinfile
@@ -262,7 +267,7 @@ print('*******')
 print(' ')
 print('DID YOU FOLLOW THE INSTRUCTIONS ABOVE??? if so, then...')
 print('BJD, orbital phase, and RVs with errors written to %s.' % outfile)
-print('Run rvplotmaker.py to plot the RV curve.')
+print('Use rvplotmaker.py to plot the RV curve.')
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 fig = plt.figure(1, figsize=(15,10))
