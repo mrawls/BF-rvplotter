@@ -82,6 +82,7 @@ stepV = 1.7 			# step in velocities in the wavelength vector w1
 m = 171 				# length of BF (must be ODD)
 r = stepV/2.997924e5 	# put stepV in km/s/pix
 w1 = w00 * np.power((1+r), np.arange(float(n)))
+amp = 5.0 			# amplitude to stretch the smoothed BFs by (y-direction) for clarity
 print ('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
 print(' ')
 
@@ -94,7 +95,7 @@ print('The first one had better be your template spectrum.')
 print(' ')
 speclist = []; wavelist = []
 filenamelist = []; datetimelist = []
-source = [] # keep track of which spectrograph was used (ARCES vs. TRES)
+source = [] # option: keep track of which spectrograph was used (ARCES vs. TRES)
 i = 0
 for line in f1: # This loop happens once for each spectrum (FITS file)
 	infile = line.rstrip()
@@ -102,11 +103,11 @@ for line in f1: # This loop happens once for each spectrum (FITS file)
 	hdu = fits.open(line)
 	spec = hdu[0].data
 	head = hdu[0].header
-	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
-	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
-	if head['imagetyp'] == 'object': source.append('arces')
-	if head['imagetyp'] == 'OBJECT': source.append('tres')
-	# *** end SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
+#	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
+#	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
+#	if head['imagetyp'] == 'object': source.append('arces')
+#	if head['imagetyp'] == 'OBJECT': source.append('tres')
+#	# *** end SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
 	filenamelist.append(infile)
 	datetime = head['date-obs']
 	datetimelist.append(Time(datetime, scale='utc', format='isot'))
@@ -140,14 +141,13 @@ for i in range (0, nspec):
 #plt.legend()
 #plt.show()
 
-# SINGLE VALUE DECOMPOSITION TIME
+# DO A SINGLE VALUE DECOMPOSITION DANCE
 svd = pyasl.SVD()
 svd.decompose(newspeclist[0], m)
 
 # BROADENING FUNCTIONS WOOOOOOOOO!!!
 bflist = []
 bfsmoothlist = []
-amp = 5.0 # amplitude by which to stretch the smoothed BFs in the y-direction for clarity
 for i in range (0, nspec):
 	# Obtain the broadening function
 	bf = svd.getBroadeningFunction(newspeclist[i]) # this one is like a matrix
@@ -163,7 +163,7 @@ for i in range (0, nspec):
 # Obtain the indices in RV space that correspond to the BF
 bf_ind = stepV*(np.arange(-m/2, m/2))
 
-# MAKE A PLOT OF THE SMOOTHED BF (optional)
+# OPTION TO PLOT THE SMOOTHED BFs
 #plt.axis([-70, 70, -0.2, 9.5])
 #plt.xlabel('Radial Velocity (km s$^{-1}$)')
 #plt.ylabel('Broadening Function (arbitrary amplitude)')
@@ -198,21 +198,18 @@ for i in range(1, nspec):
 			limitedmin=[True,True,True], limitedmax=[True,True,True], 
 			minpars=[0.2,-70,1], maxpars=[0.6,70,5], quiet=True, shh=True)
 	bffitlist.append(bffit)
-	# NOTE: to get the gaussian fit corresponding to bfsmoothlist[i],
-	# you have to call bffitlist[i][1].
-	# OTHER NOTE: 
-	gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # each element is [amp1, rvraw1, rvraw1_err]
-	gauss2[i] = [bffit[0][3], bffit[0][4], bffit[2][4]] # each element is [amp2, rvraw2, rvraw2_err]
-	# later: need to properly assign these to star 1 vs. star 2 based on amplitude !!!
+	# NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
+	gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # these are [amp1, rvraw1, rvraw1_err]
+	gauss2[i] = [bffit[0][3], bffit[0][4], bffit[2][4]] # these are [amp2, rvraw2, rvraw2_err]
 	print ('%s \t %.5f %.5f %.5f \t %.5f %.5f %.5f' % (filenamelist[i][-30:], 
 		gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss2[i][0], gauss2[i][1], gauss2[i][2]))
-	# These rvraw values will be overwritten below if bjdfilehasrvs = 1
+	# NOTE: the following rvraw values will be overwritten below if bjdfilehasrvs = True
 	rvraw1.append(bffit[0][1])
 	rvraw2.append(bffit[0][4])
 	rvraw1_err.append(bffit[2][1])
 	rvraw2_err.append(bffit[2][4])
 	
-# UNCOMMENT TO PLOT DETAILED VIEW OF EACH SMOOTHED BF
+# OPTION TO PLOT DETAILED VIEW OF EACH SMOOTHED BF
 # (you will need this for guesstimating the location of each Gaussian's peak)
 #yoffset = 0.0
 #for i in range(0, nspec-1):
@@ -237,13 +234,13 @@ g1 = open(bjdinfile)
 g2 = open(outfile, 'w')
 # Decide if we should calculate the RVs in place or read them from an updated bjdinfile
 if bjdfilehasrvs == True:
+### USE THIS if columns 3,4,5,6 of bjdinfile contain RVraw1, RVraw1err, RVraw2, RVraw2err
 	rvraw1 = []; rvraw2 = []
 	rvraw1_err = []; rvraw2_err = []
-	### USE THIS if columns 3,4,5,6 of bjdinfile contain RVraw1, RVraw1err, RVraw2, RVraw2err
 	bjdmid, bcv, rvraw1, rvraw1_err, rvraw2, rvraw2_err = np.loadtxt(g1, comments='#', 
 		dtype=np.float64, usecols=(1,2,3,4,5,6), unpack=True)
 else:
-	### USE THIS otherwise (default option)
+### USE THIS otherwise (default option)
 	bjdmid, bcv = np.loadtxt(g1, comments='#', dtype=np.float64, usecols=(1,2), unpack=True)
 bjdfunny = bjdmid - 2454833.
 phase = []
@@ -260,7 +257,8 @@ for i in range(1, nspec):
 	rv2.append(rvraw2[i] + bcvstd - bcv[i] + rvstd)
 	rv1_err.append(rvraw1_err[i])
 	rv2_err.append(rvraw2_err[i])
-	print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
+	print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], 
+			rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
 g1.close()
 g2.close()
 print('*******')
@@ -271,7 +269,6 @@ print('Use rvplotmaker.py to plot the RV curve.')
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 fig = plt.figure(1, figsize=(15,10))
-#fig.patch.set_facecolor('white') # force the pop-up window to be white, not gray
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
@@ -287,8 +284,8 @@ for i in range (1,nspec):
 	plt.text(-115, 0.45, '%s' % (datetimelist[i].iso[0:10]), size=12)
 	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, label='Smoothed BF')
 	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')
-	if source[i] == 'arces': plt.text(-115, 0.25, 'ARCES', color='#0571b0', size=12)
-	if source[i] == 'tres': plt.text(-115, 0.25, 'TRES', color = '#008837', size=12)
+#	if source[i] == 'arces': plt.text(-115, 0.25, 'ARCES', color='#0571b0', size=12)
+#	if source[i] == 'tres': plt.text(-115, 0.25, 'TRES', color = '#008837', size=12)
 	plt.text(-115, 0.35, '%.3f $\phi$' % (phase[i]), size=12)
 	if i==23: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
 						frameon=False, prop={'size':20})
