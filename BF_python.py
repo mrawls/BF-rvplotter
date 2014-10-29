@@ -31,22 +31,23 @@ There are lots of optional plots you can un-comment for sanity checks.
 REQUIRED INFILES
 infiles_BF.txt:	single-column file with one FITS filename (or path+filename) per line
 				1st entry must be for the template star (e.g., arcturus)
+				(note that the same template is used to find RVs for both stars)
 				no comments are allowed in this file
 bjds_baryvels.txt: 	columns 0,1,2 must be FITS filename, BJD, BCV (from IRAF bcvcorr)
 				top row must be for the template star (e.g., arcturus)
-				(the 0th column is identical to infiles_BF.txt)
+				(the 0th column is never used, but typically looks like infiles_BF.txt)
 				one line per observation
-				comments are allowed in this file using '#'
-				subsequent columns after 0,1,2 are initially ignored*
+				comments are allowed in this file using #
+				subsequent columns after 0,1,2 are initially ignored**
 gaussfit_pars.txt:	your best initial guesses for fitting gaussians to the BF peaks
 				the parameters are [amp1, offset1, width1, amp2, offset2, width2]
-				the top line is ignored because it corresponds to the template
+				the top line is ignored (template), but must have six values
 				one line per observation
-				comments are allowed in this file using '#'
+				comments are allowed in this file using #
 
 Finally, you'll need to specify various parameters near the top of the code.
 
-*OPTION TO MAKE FINAL PLOT NICE WITH STAR 1 & STAR 2 PROPERLY ASSIGNED
+**OPTION TO MAKE FINAL PLOT NICE WITH STAR 1 & STAR 2 PROPERLY ASSIGNED
 By default, the left peak is assigned 'star 1' and the right peak is assigned 'star 2.'
 This is obviously not always correct.
 This is how to fix it once you have good RV values, but some assigned to the wrong star.
