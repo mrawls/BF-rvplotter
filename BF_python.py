@@ -29,21 +29,21 @@ to properly fit the peaks of each BF with a Gaussian.
 There are lots of optional plots you can un-comment for sanity checks.
 
 REQUIRED INFILES
-infiles_BF.txt:	single-column file with one FITS filename (or path+filename) per line
-				1st entry must be for the template star (e.g., arcturus)
-				(note that the same template is used to find RVs for both stars)
-				no comments are allowed in this file
-bjds_baryvels.txt: 	columns 0,1,2 must be FITS filename, BJD, BCV (from IRAF bcvcorr)
-				top row must be for the template star (e.g., arcturus)
-				(the 0th column is never used, but typically looks like infiles_BF.txt)
-				one line per observation
-				comments are allowed in this file using #
-				subsequent columns after 0,1,2 are initially ignored**
-gaussfit_pars.txt:	your best initial guesses for fitting gaussians to the BF peaks
-				the parameters are [amp1, offset1, width1, amp2, offset2, width2]
-				the top line is ignored (template), but must have six values
-				one line per observation
-				comments are allowed in this file using #
+infiles:		single-column file with one FITS filename (or path+filename) per line
+			1st entry must be for the template star (e.g., arcturus)
+			(note that the same template is used to find RVs for both stars)
+			no comments are allowed in this file
+bjdinfile: 	columns 0,1,2 must be FITS filename, BJD, BCV (from IRAF bcvcorr)
+			top row must be for the template star (e.g., arcturus)
+			(the 0th column is never used, but typically looks like infiles_BF.txt)
+			one line per observation
+			comments are allowed in this file using #
+			subsequent columns after 0,1,2 are initially ignored**
+gausspars:	your best initial guesses for fitting gaussians to the BF peaks
+			the parameters are [amp1, offset1, width1, amp2, offset2, width2]
+			the top line is ignored (template), but must have six values
+			one line per observation
+			comments are allowed in this file using #
 
 Finally, you'll need to specify various parameters near the top of the code.
 
@@ -61,24 +61,25 @@ print('Welcome to BF_python.py! It\'s broadening function time.')
 print(' ')
 
 # YOU NEED TO HAVE THESE FILES
-infiles = 'infiles_BF.txt'
-bjdinfile = 'bjds_baryvels.txt'
-gausspars = 'gaussfit_pars.txt'
+infiles = 'infiles2_BF.txt'
+bjdinfile = 'bjds_baryvels2.txt'
+gausspars = 'gaussfit_pars2.txt'
 
 # FILE THAT WILL BE WRITTEN TO
-outfile = 'rvs_out_test.txt'
+outfile = 'rvs_out_apogee.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY
 bjdfilehasrvs = False
 period = 171.277967
 BJD0 = 2455170.514777
-rvstd = -5.19 # from SIMBAD, for Arcturus
-bcvstd = 18.4574 # time dependent! from running IRAF bcvcorr on template spectrum
+rvstd = 53.9848212986 # VHELIO from APOGEE header of template spectrum (??)
+#rvstd = #-5.19 # from SIMBAD, for Arcturus
+bcvstd = 11.4091224880 #18.4574 # time dependent! e.g., run IRAF bcvcorr on template
 # the new log-wavelength array is w1. it will have equal spacing in velocity.
 # please specify reasonable values below or else bad things will happen.
 # note log = log base 10 because SERIOUSLY, come on now.
-w00 = 5400 			# starting wavelength of the log-wave array in Angstroms
-n = 38750 			# desired length of the log-wave vector in pixels (must be EVEN) 
+w00 = 15145 #5400 			# starting wavelength of the log-wave array in Angstroms
+n = 20000 #38750 			# desired length of the log-wave vector in pixels (must be EVEN) 
 stepV = 1.7 			# step in velocities in the wavelength vector w1
 m = 171 				# length of BF (must be ODD)
 r = stepV/2.997924e5 	# put stepV in km/s/pix
@@ -102,7 +103,11 @@ for line in f1: # This loop happens once for each spectrum (FITS file)
 	infile = line.rstrip()
 	# Read in the FITS file with all the data in the primary HDU
 	hdu = fits.open(line)
-	spec = hdu[0].data
+	#spec = hdu[0].data
+	# APOGEE OPTION: the data is in a different place, and backwards
+	spec = hdu[1].data ### APOGEE
+	spec = spec.flatten() ### APOGEE
+	spec = spec[::-1] ### APOGEE
 	head = hdu[0].header
 #	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
 #	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
@@ -113,10 +118,14 @@ for line in f1: # This loop happens once for each spectrum (FITS file)
 	datetime = head['date-obs']
 	datetimelist.append(Time(datetime, scale='utc', format='isot'))
 	# Define the original wavelength scale
-	headerdwave = head['cdelt1']
-	headerwavestart = head['crval1']
-	headerwavestop = headerwavestart + headerdwave*len(spec)
-	wave = np.arange(headerwavestart, headerwavestop, headerdwave)
+	#headerdwave = head['cdelt1']
+	#headerwavestart = head['crval1']
+	#headerwavestop = headerwavestart + headerdwave*len(spec)
+	#wave = np.arange(headerwavestart, headerwavestop, headerdwave)
+	# APOGEE OPTION: read wavelength values straight from FITS file
+	wave = hdu[4].data ### APOGEE
+	wave = wave.flatten() ### APOGEE
+	wave = wave[::-1] ### APOGEE
 	if len(wave) != len(spec): # The wave array is sometimes 1 longer than it should be?
 		minlength = min(len(wave), len(spec))
 		wave = wave[0:minlength]
@@ -273,13 +282,14 @@ fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
-	ax = fig.add_subplot(6,4,i)
+	#ax = fig.add_subplot(6,4,i)
+	ax = fig.add_subplot(2,2,i)
 	ax.yaxis.set_major_locator(MultipleLocator(0.2))
-	if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21:
-		ax.set_yticklabels(())
-	if i!=20 and i!=21 and i!=22 and i!=23:
-		ax.set_xticklabels(())
-	plt.subplots_adjust(wspace=0.0001, hspace=0.0001)
+	#if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21:
+	#	ax.set_yticklabels(())
+	#if i!=20 and i!=21 and i!=22 and i!=23:
+	#	ax.set_xticklabels(())
+	plt.subplots_adjust(wspace=0, hspace=0)
 	plt.axis([-125, 125, -0.1, 0.55])
 	plt.tick_params(axis='both', which='major', labelsize=20)
 	plt.text(-115, 0.45, '%s' % (datetimelist[i].iso[0:10]), size=12)

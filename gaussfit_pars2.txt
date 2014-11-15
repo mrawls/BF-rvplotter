@@ -1,0 +1,5 @@
+# the first line is zeros, because template
+0 0 0 0 0 0
+# [amp1, offset1, width1, amp2, offset2, width2]
+0.45 -60 3 0.45  -30 3
+0.45 -60 3 0.45  -30 3
