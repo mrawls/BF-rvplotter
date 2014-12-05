@@ -72,9 +72,9 @@ outfile = 'rvs_out_apogee.txt'
 bjdfilehasrvs = False
 period = 171.277967
 BJD0 = 2455170.514777
-rvstd = 53.9848212986 # VHELIO from APOGEE header of template spectrum (??)
-#rvstd = #-5.19 # from SIMBAD, for Arcturus
-bcvstd = 11.4091224880 #18.4574 # time dependent! e.g., run IRAF bcvcorr on template
+#rvstd = 53.9848212986 # VHELIO from APOGEE header of template spectrum (??)
+rvstd = -5.19 # from SIMBAD, for Arcturus
+bcvstd = -0.155355148339 #18.4574 # time dependent! e.g., run IRAF bcvcorr on template
 # the new log-wavelength array is w1. it will have equal spacing in velocity.
 # please specify reasonable values below or else bad things will happen.
 # note log = log base 10 because SERIOUSLY, come on now.
