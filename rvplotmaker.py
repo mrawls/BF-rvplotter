@@ -14,7 +14,7 @@ filename = 'rvs_out1.txt'
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
 timestart = 1117
-timeend = 1737
+timeend = 1970
 phasemin = 0.5
 phasemax = 1.5
 RVmin = -59
@@ -24,6 +24,13 @@ f1 = open(filename)
 bjd, phase, rv1, rverr1, rv2, rverr2 = np.loadtxt(f1, comments='#', 
 	dtype=np.float64, usecols=(0,1,3,4,5,6), unpack=True)
 f1.close()
+
+# MANUAL ADJUSTMENT PARTY
+# the last two APOGEE points are off by about 15 km/s for an unknown reason
+rv1[-1] = rv1[-1] - 15
+rv2[-1] = rv2[-1] - 15
+rv1[-2] = rv1[-2] - 15
+rv2[-2] = rv2[-2] - 15
 
 # Double the arrays so we can plot from phase 0 to phase 2 for clarity, if desired
 rv1_double = np.concatenate((rv1,rv1), axis=0)
