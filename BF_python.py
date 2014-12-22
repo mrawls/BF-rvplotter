@@ -33,6 +33,7 @@ infiles:		single-column file with one FITS filename (or path+filename) per line
 			1st entry must be for the template star (e.g., arcturus)
 			(note that the same template is used to find RVs for both stars)
 			no comments are allowed in this file
+			FUN FACT: unless APOGEE, these should be continuum-normalized to 1 !!!
 bjdinfile: 	columns 0,1,2 must be FITS filename, BJD, BCV (from IRAF bcvcorr)
 			top row must be for the template star (e.g., arcturus)
 			(the 0th column is never used, but typically looks like infiles_BF.txt)
@@ -46,6 +47,13 @@ gausspars:	your best initial guesses for fitting gaussians to the BF peaks
 			comments are allowed in this file using #
 
 Finally, you'll need to specify various parameters near the top of the code.
+
+There are TWO True/False FLAGS you can set early in the code. One is explained below.
+The other is for whether you are working with APOGEE near-IR spectra and/or "regular"
+(i.e., ARCES or other optical) spectra.
+
+You will need to tweak the number of panels being plotted at the end of the code,
+depending on how many observations you have.
 
 **OPTION TO MAKE FINAL PLOT NICE WITH STAR 1 & STAR 2 PROPERLY ASSIGNED
 By default, the left peak is assigned 'star 1' and the right peak is assigned 'star 2.'
@@ -68,18 +76,24 @@ gausspars = 'gaussfit_pars2.txt'
 # FILE THAT WILL BE WRITTEN TO
 outfile = 'rvs_out_apogee.txt'
 
-# STUFF YOU NEED TO DEFINE CORRECTLY
+# STUFF YOU NEED TO DEFINE CORRECTLY !!!
 bjdfilehasrvs = False
+isAPOGEE = True
 period = 171.277967
 BJD0 = 2455170.514777
-#rvstd = 53.9848212986 # VHELIO from APOGEE header of template spectrum (??)
 rvstd = -5.19 # from SIMBAD, for Arcturus
-bcvstd = -0.155355148339 #18.4574 # time dependent! e.g., run IRAF bcvcorr on template
-# the new log-wavelength array is w1. it will have equal spacing in velocity.
+#bcvstd = -0.155355148339 # APOGEE Arcturus observation TIME DEPENDENT!!!
+bcvstd = 18.4574 # ARCES Arcturus observation
+
+# The new log-wavelength array will be w1. it will have equal spacing in velocity.
 # please specify reasonable values below or else bad things will happen.
 # note log = log base 10 because SERIOUSLY, come on now.
-w00 = 15145 #5400 			# starting wavelength of the log-wave array in Angstroms
-n = 20000 #38750 			# desired length of the log-wave vector in pixels (must be EVEN) 
+if isAPOGEE == True:
+	w00 = 15145		# starting wavelength of the log-wave array in Angstroms
+	n = 20000			# desired length of the log-wave vector in pixels (must be EVEN)
+else:
+	w00 = 5400 		# starting wavelength of the log-wave array in Angstroms
+	n = 38750 		# desired length of the log-wave vector in pixels (must be EVEN) 
 stepV = 1.7 			# step in velocities in the wavelength vector w1
 m = 171 				# length of BF (must be ODD)
 r = stepV/2.997924e5 	# put stepV in km/s/pix
@@ -103,11 +117,13 @@ for line in f1: # This loop happens once for each spectrum (FITS file)
 	infile = line.rstrip()
 	# Read in the FITS file with all the data in the primary HDU
 	hdu = fits.open(line)
-	#spec = hdu[0].data
-	# APOGEE OPTION: the data is in a different place, and backwards
-	spec = hdu[1].data ### APOGEE
-	spec = spec.flatten() ### APOGEE
-	spec = spec[::-1] ### APOGEE
+	if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, and not normalized
+		spec = hdu[1].data ### APOGEE
+		spec = spec.flatten() ### APOGEE
+		spec = spec[::-1] ### APOGEE
+		spec = spec / np.median(spec)
+	else: # non-APOGEE (regular) option
+		spec = hdu[0].data
 	head = hdu[0].header
 #	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
 #	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
@@ -118,14 +134,15 @@ for line in f1: # This loop happens once for each spectrum (FITS file)
 	datetime = head['date-obs']
 	datetimelist.append(Time(datetime, scale='utc', format='isot'))
 	# Define the original wavelength scale
-	#headerdwave = head['cdelt1']
-	#headerwavestart = head['crval1']
-	#headerwavestop = headerwavestart + headerdwave*len(spec)
-	#wave = np.arange(headerwavestart, headerwavestop, headerdwave)
-	# APOGEE OPTION: read wavelength values straight from FITS file
-	wave = hdu[4].data ### APOGEE
-	wave = wave.flatten() ### APOGEE
-	wave = wave[::-1] ### APOGEE
+	if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
+		wave = hdu[4].data ### APOGEE
+		wave = wave.flatten() ### APOGEE
+		wave = wave[::-1] ### APOGEE
+	else: # non-APOGEE (linear) option: create wavelength values from header data
+		headerdwave = head['cdelt1']
+		headerwavestart = head['crval1']
+		headerwavestop = headerwavestart + headerdwave*len(spec)
+		wave = np.arange(headerwavestart, headerwavestop, headerdwave)
 	if len(wave) != len(spec): # The wave array is sometimes 1 longer than it should be?
 		minlength = min(len(wave), len(spec))
 		wave = wave[0:minlength]
@@ -245,12 +262,14 @@ g2 = open(outfile, 'w')
 # Decide if we should calculate the RVs in place or read them from an updated bjdinfile
 if bjdfilehasrvs == True:
 ### USE THIS if columns 3,4,5,6 of bjdinfile contain RVraw1, RVraw1err, RVraw2, RVraw2err
+	print('NOT calculating RVs; reading them from bjd infile...')
 	rvraw1 = []; rvraw2 = []
 	rvraw1_err = []; rvraw2_err = []
 	bjdmid, bcv, rvraw1, rvraw1_err, rvraw2, rvraw2_err = np.loadtxt(g1, comments='#', 
 		dtype=np.float64, usecols=(1,2,3,4,5,6), unpack=True)
 else:
 ### USE THIS otherwise (default option)
+	print('Calculating RVs...')
 	bjdmid, bcv = np.loadtxt(g1, comments='#', dtype=np.float64, usecols=(1,2), unpack=True)
 bjdfunny = bjdmid - 2454833.
 phase = []
