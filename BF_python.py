@@ -82,8 +82,8 @@ isAPOGEE = True
 period = 171.277967
 BJD0 = 2455170.514777
 rvstd = -5.19 # from SIMBAD, for Arcturus
-#bcvstd = -0.155355148339 # APOGEE Arcturus observation TIME DEPENDENT!!!
-bcvstd = 18.4574 # ARCES Arcturus observation
+bcvstd = -0.155355148339 # APOGEE Arcturus observation TIME DEPENDENT!!!
+#bcvstd = 18.4574 # ARCES Arcturus observation
 
 # The new log-wavelength array will be w1. it will have equal spacing in velocity.
 # please specify reasonable values below or else bad things will happen.
@@ -282,8 +282,8 @@ for i in range(1, nspec):
 	else:
 		phase.append((fracP % 1))
 		cycle = int(fracP)
-	rv1.append(rvraw1[i] + bcvstd - bcv[i] + rvstd) # DON'T MESS UP THE +/- SIGNS
-	rv2.append(rvraw2[i] + bcvstd - bcv[i] + rvstd)
+	rv1.append(rvraw1[i] - bcv[i] + rvstd + bcvstd) # DON'T MESS UP THE +/- SIGNS
+	rv2.append(rvraw2[i] - bcv[i] + rvstd + bcvstd)
 	rv1_err.append(rvraw1_err[i])
 	rv2_err.append(rvraw2_err[i])
 	print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], 
