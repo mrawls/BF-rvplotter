@@ -58,16 +58,16 @@ plt.plot(bjd-2454833, rv1, color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
 plt.plot(bjd-2454833, rv2, color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
 for idx, label in enumerate(source):
 	if label == 'arces':
-		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ko:', color='0.75', mfc=red, mec='k', ms=8, lw=1.5)
-		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ko:', color='0.75', mfc=yel, mec='k', ms=8, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ko:', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ko:', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
 	elif label == 'tres':
-		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='kv:', color='0.75', mfc=red, mec='k', ms=8, lw=1.5)
-		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='kv:', color='0.75', mfc=yel, mec='k', ms=8, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='kv:', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='kv:', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
 	elif label == 'apogee':
-		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ks:', color='0.75', mfc=red, mec='k', ms=8, lw=1.5)
-		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ks:', color='0.75', mfc=yel, mec='k', ms=8, lw=1.5)				
-#plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=8, lw=1.5)
-#plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=8, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ks:', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
+		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ks:', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)				
+#plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=10, lw=1.5)
+#plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=10, lw=1.5)
 plt.xlabel("Time (BJD -- 2454833)", size=24, labelpad=10)
 
 # Folded RV vs phase
@@ -81,20 +81,20 @@ plt.tick_params(axis='both', which='major', labelsize=20)
 for idx, label in enumerate(source):
 	idx2 = idx + len(source)
 	if label == 'arces':
-		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5, label='ARCES, Star 1' if idx==6 else '')
-		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5, label='Star 2' if idx==6 else '')
-		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5)
-		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='ARCES, Star 1' if idx==6 else '')
+		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==6 else '')
+		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
 	elif label == 'tres':
-		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='v', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5, label='TRES, Star 1' if idx==0 else '')
-		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='v', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5, label='Star 2' if idx==0 else '')
-		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='v', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5)
-		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='v', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='v', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='TRES, Star 1' if idx==0 else '')
+		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='v', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==0 else '')
+		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='v', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='v', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
 	elif label == 'apogee':
-		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='s', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5, label='APOGEE, Star 1' if idx==23 else '')
-		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='s', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5, label='Star 2' if idx==23 else '')		
-		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='s', color=red, mec='k', ecolor=red, ms=8, ls='None', lw=1.5)
-		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='s', color=yel, mec='k', ecolor=yel, ms=8, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='s', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='APOGEE, Star 1' if idx==23 else '')
+		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==23 else '')		
+		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='s', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
 plt.xlabel("Orbital Phase", size=24)
 
 # Draw lines at phase = 0.5
