@@ -8,6 +8,7 @@ from PyAstronomy import pyasl
 from scipy import ndimage
 import pandas as pd
 import gaussfitter as gf
+import BF_functions as bff
 '''
 Program to extract radial velocities from a double-lined spectrum.
 Uses the Broadening Function technique.
@@ -29,7 +30,7 @@ to properly fit the peaks of each BF with a Gaussian.
 There are lots of optional plots you can un-comment for sanity checks.
 
 REQUIRED INFILES
-infiles:		single-column file with one FITS filename (or path+filename) per line
+infiles:		single-column file with one FITS or TXT filename (w/ full path) per line
 			1st entry must be for the template star (e.g., arcturus)
 			(note that the same template is used to find RVs for both stars)
 			no comments are allowed in this file
@@ -69,21 +70,32 @@ print('Welcome to BF_python.py! It\'s broadening function time.')
 print(' ')
 
 # YOU NEED TO HAVE THESE FILES
-infiles = 'infiles2_BF.txt'
-bjdinfile = 'bjds_baryvels2.txt'
-gausspars = 'gaussfit_pars2.txt'
+infiles = '../../RG_spectra/infiles_model_BF.txt'
+bjdinfile = '../../RG_spectra/bjds_baryvels_model.txt'
+gausspars = '../../RG_spectra/gaussfit_pars_model.txt'
 
 # FILE THAT WILL BE WRITTEN TO
-outfile = 'rvs_out_apogee.txt'
+outfile = '../../RG_spectra/rvs_out_model2.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 bjdfilehasrvs = False
 isAPOGEE = True
 period = 171.277967
 BJD0 = 2455170.514777
-rvstd = -5.19 # from SIMBAD, for Arcturus
-bcvstd = -0.155355148339 # APOGEE Arcturus observation TIME DEPENDENT!!!
-#bcvstd = 18.4574 # ARCES Arcturus observation
+rvstd = 0 	# if using model spectrum
+bcvstd = 0 	# if using model spectrum
+#####
+# ARCES ARCTURUS OBSERVATION
+#rvstd = 20.71053 # this is the TOTAL RV OFFSET FROM REST of the ARCES Arcturus observation
+#bcvstd = 0 # this goes with the above rvstd
+#####
+# APOGEE ARCTURUS OBSERVATION ... wrong right now (??)
+#rvstd = -75.54821 # this is the TOTAL RV OFFSET FROM REST of the APOGEE Arcturus observation
+#bcvstd = 0 # this goes with the above rvstd
+#####
+#rvstd = -5.19 # from SIMBAD, for Arcturus .. WRONG(ish)
+#bcvstd = -0.155355148339 # APOGEE Arcturus bcv
+#bcvstd = 18.4574 # ARCES Arcturus bcv
 
 # The new log-wavelength array will be w1. it will have equal spacing in velocity.
 # please specify reasonable values below or else bad things will happen.
@@ -102,71 +114,21 @@ amp = 5.0 			# amplitude to stretch the smoothed BFs by (y-direction) for clarit
 print ('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
 print(' ')
 
-# READ IN DATA FROM FITS FILES
-# Read in a text file containing a list of fits files
-# The first one listed will be the template spectrum
-f1 = open(infiles)
-print('Reading FITS files from 1st column in %s' % infiles)
-print('The first one had better be your template spectrum.')
-print(' ')
-speclist = []; wavelist = []
-filenamelist = []; datetimelist = []
-source = [] # option: keep track of which spectrograph was used (ARCES vs. TRES)
-i = 0
-for line in f1: # This loop happens once for each spectrum (FITS file)
-	infile = line.rstrip()
-	# Read in the FITS file with all the data in the primary HDU
-	hdu = fits.open(line)
-	if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, and not normalized
-		spec = hdu[1].data ### APOGEE
-		spec = spec.flatten() ### APOGEE
-		spec = spec[::-1] ### APOGEE
-		spec = spec / np.median(spec)
-	else: # non-APOGEE (regular) option
-		spec = hdu[0].data
-	head = hdu[0].header
-#	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
-#	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
-#	if head['imagetyp'] == 'object': source.append('arces')
-#	if head['imagetyp'] == 'OBJECT': source.append('tres')
-#	# *** end SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
-	filenamelist.append(infile)
-	datetime = head['date-obs']
-	datetimelist.append(Time(datetime, scale='utc', format='isot'))
-	# Define the original wavelength scale
-	if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
-		wave = hdu[4].data ### APOGEE
-		wave = wave.flatten() ### APOGEE
-		wave = wave[::-1] ### APOGEE
-	else: # non-APOGEE (linear) option: create wavelength values from header data
-		headerdwave = head['cdelt1']
-		headerwavestart = head['crval1']
-		headerwavestop = headerwavestart + headerdwave*len(spec)
-		wave = np.arange(headerwavestart, headerwavestop, headerdwave)
-	if len(wave) != len(spec): # The wave array is sometimes 1 longer than it should be?
-		minlength = min(len(wave), len(spec))
-		wave = wave[0:minlength]
-		spec = spec[0:minlength]
-	wavelist.append(wave)
-	speclist.append(spec)
-	i = i + 1	
-# save the total number of spectra
-nspec = i
-f1.close()
+nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, isAPOGEE)
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
 # option to make a plot for sanity
 newspeclist = []
 yoffset = 1
-#plt.axis([w1[0], w1[-1], 0, 27])
-#plt.xlabel('wavelength')
+plt.axis([w1[0], w1[-1], 0, 27])
+plt.xlabel('wavelength')
 for i in range (0, nspec):
 	newspec = np.interp(w1, wavelist[i], speclist[i])
 	newspeclist.append(newspec)
-#	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
+	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
 	yoffset = yoffset + 1
-#plt.legend()
-#plt.show()
+plt.legend()
+plt.show()
 
 # DO A SINGLE VALUE DECOMPOSITION DANCE
 svd = pyasl.SVD()
@@ -223,7 +185,7 @@ for i in range(1, nspec):
 	bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=2, 
 			params=param[i], err=error_array,
 			limitedmin=[True,True,True], limitedmax=[True,True,True], 
-			minpars=[0.2,-70,1], maxpars=[0.6,70,5], quiet=True, shh=True)
+			minpars=[0.2,-100,1], maxpars=[0.6,100,5], quiet=True, shh=True)
 	bffitlist.append(bffit)
 	# NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
 	gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # these are [amp1, rvraw1, rvraw1_err]
