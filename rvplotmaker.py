@@ -17,7 +17,8 @@ Now there are three different symbols for three different telescope/instrument c
 '''
 
 # File containing times, phases, and RVs as specified below
-filename = 'rvs_out1.txt'
+#filename = 'rvs_out1.txt'
+filename = 'rvs_out_arces.txt'
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
