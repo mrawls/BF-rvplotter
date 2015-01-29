@@ -10,114 +10,99 @@ import pandas as pd
 import gaussfitter as gf
 import BF_functions as bff
 '''
-Program to extract radial velocities from a double-lined spectrum.
+Program to extract radial velocities from a double-lined binary star spectrum.
 Uses the Broadening Function technique.
 
 Meredith Rawls
-Summer 2014
+2014-2015
 
-Based loosely on Rucinski's BFall_IDL.pro and uses the PyAstronomy tools.
-See more here:
+Based loosely on Rucinski's BFall_IDL.pro, and uses the PyAstronomy tools.
 http://www.astro.utoronto.ca/~rucinski/BFdescription.html
-and
 http://www.hs.uni-hamburg.de/DE/Ins/Per/Czesla/PyA/PyA/pyaslDoc/aslDoc/svd.html
-
-There are lots of packages you need. Have fun with that.
 
 In practice, you will run this twice: once to do the initial BF, and then again
 to properly fit the peaks of each BF with a Gaussian.
 
-There are lots of optional plots you can un-comment for sanity checks.
-
-REQUIRED INFILES
+INPUT
 infiles:		single-column file with one FITS or TXT filename (w/ full path) per line
-			1st entry must be for the template star (e.g., arcturus)
-			(note that the same template is used to find RVs for both stars)
-			no comments are allowed in this file
+			1st entry must be for the template star (e.g., arcturus or phoenix model)
+			(the same template is used to find RVs for both stars)
+			NO comments are allowed in this file
 			FUN FACT: unless APOGEE, these should be continuum-normalized to 1 !!!
-bjdinfile: 	columns 0,1,2 must be FITS filename, BJD, BCV (from IRAF bcvcorr)
+bjdinfile: 	columns 0,1,2 must be FITS filename, BJD, BCV (e.g., from IRAF bcvcorr)
 			top row must be for the template star (e.g., arcturus)
 			(the 0th column is never used, but typically looks like infiles_BF.txt)
 			one line per observation
 			comments are allowed in this file using #
-			subsequent columns after 0,1,2 are initially ignored**
 gausspars:	your best initial guesses for fitting gaussians to the BF peaks
 			the parameters are [amp1, offset1, width1, amp2, offset2, width2]
 			the top line is ignored (template), but must have six values
 			one line per observation
 			comments are allowed in this file using #
 
-Finally, you'll need to specify various parameters near the top of the code.
+OUTPUT
+outfile:		a file that will be created with 8 columns: BJD midpoint, orbital phase,
+			Kepler BJD, RV1, RV1 error, RV2, RV2 error, and source (a string)
++lots of plots
 
-There are TWO True/False FLAGS you can set early in the code. One is explained below.
-The other is for whether you are working with APOGEE near-IR spectra and/or "regular"
-(i.e., ARCES or other optical) spectra.
-
-You will need to tweak the number of panels being plotted at the end of the code,
-depending on how many observations you have.
-
-**OPTION TO MAKE FINAL PLOT NICE WITH STAR 1 & STAR 2 PROPERLY ASSIGNED
-By default, the left peak is assigned 'star 1' and the right peak is assigned 'star 2.'
-This is obviously not always correct.
-This is how to fix it once you have good RV values, but some assigned to the wrong star.
--->	edit bjds_baryvels.txt columns 3,4,5,6 to be rvraw1, rvrawerr1, rvraw2, rvrawerr2
-	once you look at the BF amplitudes and figure out which star is which in each case.
--->	set variable bjdfilehasrvs = True below (default is False)
--->	run this program again
+IN THE CODE
+You need to specify whether you have APOGEE (near-IR) or "regular" (e.g., ARCES)
+spectra with the 'isAPOGEE' flag. You also need to set the binary's PERIOD and BJD0,
+both in days, and the constant RV and BCV of whatever template you are using.
 '''
 
 print('Welcome to BF_python.py! It\'s broadening function time.')
 print(' ')
 
-# YOU NEED TO HAVE THESE FILES
-infiles = '../../RG_spectra/infiles_model_BF.txt'
-bjdinfile = '../../RG_spectra/bjds_baryvels_model.txt'
-gausspars = '../../RG_spectra/gaussfit_pars_model.txt'
+##########
+# YOU NEED TO HAVE THESE INPUT FILES
+infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
+bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
+gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
+#infiles = '../../RG_spectra/reduced_201405/kplr7037405/infiles_7037405_arces.txt'
+#bjdinfile = '../../RG_spectra/reduced_201405/kplr7037405/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/reduced_201405/kplr7037405/gaussfit_pars.txt'
+#infiles = '../../RG_spectra/reduced_201405/kplr9246715/infiles_BF.txt'
+#bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
+#infiles = '../../RG_spectra/infiles_model_BF.txt'
+#bjdinfile = '../../RG_spectra/bjds_baryvels_model.txt'
+#gausspars = '../../RG_spectra/gaussfit_pars_model.txt'
 
-# FILE THAT WILL BE WRITTEN TO
-outfile = '../../RG_spectra/rvs_out_model2.txt'
+# OUTPUT FILE THAT WILL BE WRITTEN TO
+outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model_apogee.txt'
+#outfile = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
+#outfile = '../../RG_spectra/rvs_out_arces2.txt'
+#outfile = '../../RG_spectra/APOGEE/rvs_out_apogee.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
-bjdfilehasrvs = False
 isAPOGEE = True
-period = 171.277967
-BJD0 = 2455170.514777
-rvstd = 0 	# if using model spectrum
-bcvstd = 0 	# if using model spectrum
-#####
+#period = 171.277967 #for 9246715
+#BJD0 = 2455170.514777 #for 9246715
+period = 207.150524 #for 7037405
+BJD0 = 2454905.625221 #for 7037405
+rvstd = 0 						# km/s; 0 if using a model spectrum
+bcvstd = 0 						# km/s; 0 if using model spectrum
+# some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
 #rvstd = 20.71053 # this is the TOTAL RV OFFSET FROM REST of the ARCES Arcturus observation
 #bcvstd = 0 # this goes with the above rvstd
-#####
-# APOGEE ARCTURUS OBSERVATION ... wrong right now (??)
-#rvstd = -75.54821 # this is the TOTAL RV OFFSET FROM REST of the APOGEE Arcturus observation
-#bcvstd = 0 # this goes with the above rvstd
-#####
-#rvstd = -5.19 # from SIMBAD, for Arcturus .. WRONG(ish)
+#rvstd = -5.19 # from SIMBAD, for Arcturus ... WRONG(ish)
 #bcvstd = -0.155355148339 # APOGEE Arcturus bcv
 #bcvstd = 18.4574 # ARCES Arcturus bcv
+##########
 
-# The new log-wavelength array will be w1. it will have equal spacing in velocity.
-# please specify reasonable values below or else bad things will happen.
-# note log = log base 10 because SERIOUSLY, come on now.
-if isAPOGEE == True:
-	w00 = 15145		# starting wavelength of the log-wave array in Angstroms
-	n = 20000			# desired length of the log-wave vector in pixels (must be EVEN)
-else:
-	w00 = 5400 		# starting wavelength of the log-wave array in Angstroms
-	n = 38750 		# desired length of the log-wave vector in pixels (must be EVEN) 
-stepV = 1.7 			# step in velocities in the wavelength vector w1
-m = 171 				# length of BF (must be ODD)
-r = stepV/2.997924e5 	# put stepV in km/s/pix
-w1 = w00 * np.power((1+r), np.arange(float(n)))
-amp = 5.0 			# amplitude to stretch the smoothed BFs by (y-direction) for clarity
-print ('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
-print(' ')
+# CREATE NEW SPECTRUM IN LOG SPACE
+# The wavelengths are w1.
+# The BF will be evenly spaced in velocity with length m.
+# The velocity steps are r (km/s/pix).
+w1, m, r = bff.logify_spec(isAPOGEE)
+amp = 5.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
 
-nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, isAPOGEE)
+# READ IN ALL THE THINGS
+nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
-# option to make a plot for sanity
 newspeclist = []
 yoffset = 1
 plt.axis([w1[0], w1[-1], 0, 27])
@@ -127,14 +112,13 @@ for i in range (0, nspec):
 	newspeclist.append(newspec)
 	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
 	yoffset = yoffset + 1
-plt.legend()
+#plt.legend()
 plt.show()
 
-# DO A SINGLE VALUE DECOMPOSITION DANCE
+# BROADENING FUNCTION TIME
 svd = pyasl.SVD()
+# Single Value Decomposition
 svd.decompose(newspeclist[0], m)
-
-# BROADENING FUNCTIONS WOOOOOOOOO!!!
 bflist = []
 bfsmoothlist = []
 for i in range (0, nspec):
@@ -150,126 +134,39 @@ for i in range (0, nspec):
 	bflist.append(bf)
 	bfsmoothlist.append(bfsmooth)
 # Obtain the indices in RV space that correspond to the BF
-bf_ind = stepV*(np.arange(-m/2, m/2))
+bf_ind = svd.getRVAxis(r, 1)
 
-# OPTION TO PLOT THE SMOOTHED BFs
-#plt.axis([-70, 70, -0.2, 9.5])
-#plt.xlabel('Radial Velocity (km s$^{-1}$)')
-#plt.ylabel('Broadening Function (arbitrary amplitude)')
-#yoffset = 0.0
-#for i in range(1, nspec):
-#	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
-#	#plt.plot(bf_ind, bflist[i]+yoffset) # unsmoothed BFs
-#	yoffset = yoffset + 0.4
-#plt.show()
+# PLOT THE SMOOTHED BFs
+# this helps you estimate the location of each peak so you can update gausspars NOW!
+plt.axis([-100, 70, -0.2, 12])
+plt.xlabel('Radial Velocity (km s$^{-1}$)')
+plt.ylabel('Broadening Function (arbitrary amplitude)')
+yoffset = 0.0
+for i in range(1, nspec):
+	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
+	yoffset = yoffset + 0.4
+plt.show()
 
 # FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
-# you have to have pretty decent guesses for it to fit the main peaks.
-# edit the file gaussfit_pars.txt to adjust these values.
-f1 = open(gausspars)
-param = np.loadtxt(f1, comments='#')
-f1.close()
-bffitlist = []
-bffitlist.append(0)
-gauss1 = [[] for i in range(nspec)]
-gauss2 = [[] for i in range(nspec)]
-gauss1[0] = [0,0]
-gauss2[0] = [0,0]
-rvraw1 = []; rvraw2 = []
-rvraw1_err = []; rvraw2_err = []
-rvraw1.append(0); rvraw2.append(0); rvraw1_err.append(0); rvraw2_err.append(0)
-error_array = np.ones(len(bfsmoothlist[0]))*0.01 # dummy array with 0.01 error values
-print('Two-Gaussian fit results: peak amplitude, rvraw, rvraw_err (for each star*)')
-print ('---------------------------------------------------------------------------')
-for i in range(1, nspec):
-	bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=2, 
-			params=param[i], err=error_array,
-			limitedmin=[True,True,True], limitedmax=[True,True,True], 
-			minpars=[0.2,-100,1], maxpars=[0.6,100,5], quiet=True, shh=True)
-	bffitlist.append(bffit)
-	# NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
-	gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # these are [amp1, rvraw1, rvraw1_err]
-	gauss2[i] = [bffit[0][3], bffit[0][4], bffit[2][4]] # these are [amp2, rvraw2, rvraw2_err]
-	print ('%s \t %.5f %.5f %.5f \t %.5f %.5f %.5f' % (filenamelist[i][-30:], 
-		gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss2[i][0], gauss2[i][1], gauss2[i][2]))
-	# NOTE: the following rvraw values will be overwritten below if bjdfilehasrvs = True
-	rvraw1.append(bffit[0][1])
-	rvraw2.append(bffit[0][4])
-	rvraw1_err.append(bffit[2][1])
-	rvraw2_err.append(bffit[2][4])
-	
-# OPTION TO PLOT DETAILED VIEW OF EACH SMOOTHED BF
-# (you will need this for guesstimating the location of each Gaussian's peak)
-#yoffset = 0.0
-#for i in range(0, nspec-1):
-#	plt.plot(bf_ind, bffitlist[i][1]+yoffset, color='r')
-#	yoffset = yoffset + 0.4
-#plt.show()
-print(' ')
-print('You MUST manually guesstimate the location of each Gaussian\'s peak in %s!' % gausspars)
-print('Until you do, the above values will be WRONG and the plot will look TERRIBLE.')
-print(' ')
+# you have to have pretty decent guesses in gausspars for this to work.
+bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind)
 
-# CALCULATE ORBITAL PHASES AND TRUE RV CURVE
-rv1 = []; rv2 = []
-rv1.append(0); rv2.append(0)
-rv1_err = []; rv2_err = []
-rv1_err.append(0); rv2_err.append(0)
-print('*******')
-print('*Note that Star 1 and Star 2 MAY NOT BE properly assigned above.')
-print('For now, you must do this manually; that is why the peak amplitude is printed.')
-print('You should update %s manually, set bjdfilehasrvs = True, and run again.' % bjdinfile)
-g1 = open(bjdinfile)
-g2 = open(outfile, 'w')
-# Decide if we should calculate the RVs in place or read them from an updated bjdinfile
-if bjdfilehasrvs == True:
-### USE THIS if columns 3,4,5,6 of bjdinfile contain RVraw1, RVraw1err, RVraw2, RVraw2err
-	print('NOT calculating RVs; reading them from bjd infile...')
-	rvraw1 = []; rvraw2 = []
-	rvraw1_err = []; rvraw2_err = []
-	bjdmid, bcv, rvraw1, rvraw1_err, rvraw2, rvraw2_err = np.loadtxt(g1, comments='#', 
-		dtype=np.float64, usecols=(1,2,3,4,5,6), unpack=True)
-else:
-### USE THIS otherwise (default option)
-	print('Calculating RVs...')
-	bjdmid, bcv = np.loadtxt(g1, comments='#', dtype=np.float64, usecols=(1,2), unpack=True)
-bjdfunny = bjdmid - 2454833.
-phase = []
-phase.append(0)
-for i in range(1, nspec):
-	fracP = (bjdmid[i] - BJD0) / period
-	if fracP < 0:
-		phase.append(1 + (fracP % 1))
-		cycle = int(fracP) - 1
-	else:
-		phase.append((fracP % 1))
-		cycle = int(fracP)
-	rv1.append(rvraw1[i] - bcv[i] + rvstd + bcvstd) # DON'T MESS UP THE +/- SIGNS
-	rv2.append(rvraw2[i] - bcv[i] + rvstd + bcvstd)
-	rv1_err.append(rvraw1_err[i])
-	rv2_err.append(rvraw2_err[i])
-	print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], 
-			rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
-g1.close()
-g2.close()
-print('*******')
-print(' ')
-print('DID YOU FOLLOW THE INSTRUCTIONS ABOVE??? if so, then...')
-print('BJD, orbital phase, and RVs with errors written to %s.' % outfile)
-print('Use rvplotmaker.py to plot the RV curve.')
+# CALCULATE ORBITAL PHASES AND FINAL RV CURVE
+phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd, source)
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
+# manually adjust this multi-panel plot based on how many spectra you have
 fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
-	#ax = fig.add_subplot(6,4,i)
-	ax = fig.add_subplot(2,2,i)
+	ax = fig.add_subplot(7,4,i)
+	#ax = fig.add_subplot(2,2,i)
 	ax.yaxis.set_major_locator(MultipleLocator(0.2))
-	#if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21:
-	#	ax.set_yticklabels(())
-	#if i!=20 and i!=21 and i!=22 and i!=23:
-	#	ax.set_xticklabels(())
+	if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21 and i!=25:
+		ax.set_yticklabels(())
+	if i!=20 and i!=21 and i!=22 and i!=23 and i!=24 and i!=25:
+		ax.set_xticklabels(())
 	plt.subplots_adjust(wspace=0, hspace=0)
 	plt.axis([-125, 125, -0.1, 0.55])
 	plt.tick_params(axis='both', which='major', labelsize=20)
