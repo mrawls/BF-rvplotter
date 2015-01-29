@@ -18,17 +18,22 @@ Now there are three different symbols for three different telescope/instrument c
 
 # File containing times, phases, and RVs as specified below
 #filename = 'rvs_out1.txt'
-filename = 'rvs_out_arces.txt'
+filename = '../../RG_spectra/rvs_out_arces.txt'
+#filename = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
+#filename = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model.txt'
+#filename = '../../RG_spectra/rvs_out_arces.txt'
+sysname = '9246715'
+#sysname = '7037405'
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
-timestart = 1117
-timeend = 1970
+timestart = 1117 #1600
+timeend = 1970 #2300
 phasemin = 0.5
 phasemax = 1.5
-RVmin = -59
-RVmax = 59
+RVmin = -70 #-80
+RVmax = 50 #0
 
 f1 = open(filename)
 bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(f1, comments='#', 
@@ -55,6 +60,7 @@ ax2.spines['right'].set_visible(False)
 ax2.xaxis.set_ticks_position('bottom')
 ax2.yaxis.set_ticks_position('left')
 plt.tick_params(axis='both', which='major', labelsize=20)
+# dotted lines to guide the eye
 plt.plot(bjd-2454833, rv1, color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
 plt.plot(bjd-2454833, rv2, color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
 for idx, label in enumerate(source):
@@ -67,8 +73,8 @@ for idx, label in enumerate(source):
 	elif label == 'apogee':
 		plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ks:', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
 		plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ks:', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)				
-#plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=10, lw=1.5)
-#plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=10, lw=1.5)
+##plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=10, lw=1.5)
+##plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=10, lw=1.5)
 plt.xlabel("Time (BJD -- 2454833)", size=24, labelpad=10)
 
 # Folded RV vs phase
@@ -82,7 +88,7 @@ plt.tick_params(axis='both', which='major', labelsize=20)
 for idx, label in enumerate(source):
 	idx2 = idx + len(source)
 	if label == 'arces':
-		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='ARCES, Star 1' if idx==6 else '')
+		plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='ARCES, Star 1' if idx==6 or idx==0 else '')
 		plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==6 else '')
 		plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
 		plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
@@ -107,5 +113,6 @@ plt.legend(ncol=3, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_ancho
 fig.text(0.07, 0.5, 'Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=24, rotation='vertical')
 fig.text(0.14, 0.115, 'Folded', size=24)
 fig.text(0.14, 0.55, 'Unfolded', size=24)
+fig.text(0.2, 0.9, sysname, size=32)
 
 plt.show()
