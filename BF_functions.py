@@ -10,6 +10,7 @@ import pandas as pd
 import gaussfitter as gf
 '''
 Functions used in BF_python.py
+Read the damn comments
 '''
 
 def logify_spec(isAPOGEE = False):
