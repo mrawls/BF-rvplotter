@@ -120,7 +120,7 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
 	rvraw1.append(0); rvraw2.append(0); rvraw1_err.append(0); rvraw2_err.append(0)
 	error_array = np.ones(len(bfsmoothlist[0]))*0.01 # dummy array with 0.01 error values
 	print(' ')
-	print('Two-Gaussian fit results: peak amplitude, rvraw, rvraw_err (for each star)')
+	print('Two-Gaussian fit results: peak amplitude, width, rvraw, rvraw_err (for each star)')
 	print ('---------------------------------------------------------------------------')
 	for i in range(1, nspec):
 		bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=2, 
@@ -129,10 +129,10 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
 				minpars=[0.2,-100,1], maxpars=[0.6,100,5], quiet=True, shh=True)
 		bffitlist.append(bffit)
 		# NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
-		gauss1[i] = [bffit[0][0], bffit[0][1], bffit[2][1]] # these are [amp1, rvraw1, rvraw1_err]
-		gauss2[i] = [bffit[0][3], bffit[0][4], bffit[2][4]] # these are [amp2, rvraw2, rvraw2_err]
-		print ('%s \t %.5f %.5f %.5f \t %.5f %.5f %.5f' % (filenamelist[i][-15:], 
-			gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss2[i][0], gauss2[i][1], gauss2[i][2]))
+		gauss1[i] = [bffit[0][0], bffit[0][2], bffit[0][1], bffit[2][1]] # these are [amp1, width1, rvraw1, rvraw1_err]
+		gauss2[i] = [bffit[0][3], bffit[0][5], bffit[0][4], bffit[2][4]] # these are [amp2, width2, rvraw2, rvraw2_err]
+		print ('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:], 
+			gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss1[i][3], gauss2[i][0], gauss2[i][1], gauss2[i][2], gauss2[i][3]))
 		rvraw1.append(bffit[0][1])
 		rvraw2.append(bffit[0][4])
 		rvraw1_err.append(bffit[2][1])
