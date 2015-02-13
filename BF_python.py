@@ -56,31 +56,31 @@ print(' ')
 
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
-infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
-bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
-gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
+#infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
+#bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
 #infiles = '../../RG_spectra/reduced_201405/kplr7037405/infiles_7037405_arces.txt'
 #bjdinfile = '../../RG_spectra/reduced_201405/kplr7037405/bjds_baryvels.txt'
 #gausspars = '../../RG_spectra/reduced_201405/kplr7037405/gaussfit_pars.txt'
-#infiles = '../../RG_spectra/reduced_201405/kplr9246715/infiles_BF.txt'
-#bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
-#gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
+infiles = '../../RG_spectra/reduced_201405/kplr9246715/infiles_BF.txt'
+bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
+gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
 #infiles = '../../RG_spectra/infiles_model_BF.txt'
 #bjdinfile = '../../RG_spectra/bjds_baryvels_model.txt'
 #gausspars = '../../RG_spectra/gaussfit_pars_model.txt'
 
 # OUTPUT FILE THAT WILL BE WRITTEN TO
-outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model_apogee.txt'
+#outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model_apogee.txt'
 #outfile = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
-#outfile = '../../RG_spectra/rvs_out_arces2.txt'
+outfile = '../../RG_spectra/rvs_out_arces2.txt'
 #outfile = '../../RG_spectra/APOGEE/rvs_out_apogee.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
-isAPOGEE = True
-#period = 171.277967 #for 9246715
-#BJD0 = 2455170.514777 #for 9246715
-period = 207.150524 #for 7037405
-BJD0 = 2454905.625221 #for 7037405
+isAPOGEE = False
+period = 171.277967 #for 9246715
+BJD0 = 2455170.514777 #for 9246715
+#period = 207.150524 #for 7037405
+#BJD0 = 2454905.625221 #for 7037405
 rvstd = 0 						# km/s; 0 if using a model spectrum
 bcvstd = 0 						# km/s; 0 if using model spectrum
 # some previously set values for posterity ...
@@ -156,26 +156,33 @@ phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
+windowcols = 4		# how many window columns there should be
+windowrows = 6		# how many window rows there should be
+xmin = -79
+xmax = 79
+ymin = -0.05
+ymax = 0.45
 fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
-	ax = fig.add_subplot(7,4,i)
-	#ax = fig.add_subplot(2,2,i)
+	ax = fig.add_subplot(windowrows, windowcols,i)
 	ax.yaxis.set_major_locator(MultipleLocator(0.2))
 	if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21 and i!=25:
 		ax.set_yticklabels(())
 	if i!=20 and i!=21 and i!=22 and i!=23 and i!=24 and i!=25:
 		ax.set_xticklabels(())
 	plt.subplots_adjust(wspace=0, hspace=0)
-	plt.axis([-125, 125, -0.1, 0.55])
-	plt.tick_params(axis='both', which='major', labelsize=20)
-	plt.text(-115, 0.45, '%s' % (datetimelist[i].iso[0:10]), size=12)
+	plt.axis([xmin, xmax, ymin, ymax])
+	plt.tick_params(axis='both', which='major', labelsize=14)
+	plt.text(0.9*xmin, 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
+	plt.text(0.9*xmin, 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
+	if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
+	elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
+	elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
+	else: plt.txt(0.9*xmin, 0.4*ymax, 'SOURCE?', color = 'k', size=12)
 	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, label='Smoothed BF')
-	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')
-#	if source[i] == 'arces': plt.text(-115, 0.25, 'ARCES', color='#0571b0', size=12)
-#	if source[i] == 'tres': plt.text(-115, 0.25, 'TRES', color = '#008837', size=12)
-	plt.text(-115, 0.35, '%.3f $\phi$' % (phase[i]), size=12)
+	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')	
 	if i==23: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
 						frameon=False, prop={'size':20})
 plt.show()
