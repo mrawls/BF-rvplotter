@@ -21,9 +21,9 @@ def logify_spec(isAPOGEE = False):
 		w00 = 15145		# starting wavelength of the log-wave array in Angstroms
 		n = 20000			# desired length of the log-wave vector in pixels (must be EVEN)
 	else:
-		w00 = 5400 		# starting wavelength of the log-wave array in Angstroms
-		n = 38750 		# desired length of the log-wave vector in pixels (must be EVEN) 
-	stepV = 1.7 			# step in velocities in the wavelength vector w1
+		w00 = 5400 #5055 		# starting wavelength of the log-wave array in Angstroms
+		n = 38750 #7000 		# desired length of the log-wave vector in pixels (must be EVEN) 
+	stepV = 1.7 #2.7 			# step in velocities in the wavelength vector w1
 	m = 171 				# length of BF (must be ODD)
 	r = stepV/299792.458 	# put stepV in km/s/pix
 	w1 = w00 * np.power((1+r), np.arange(float(n)))
@@ -57,6 +57,8 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 #				# VACUUM CORRECTION
 #				if i != 0:
 #					wave = wave / (1 + 5.792105e-2/(238.0185 - 1/np.power(wave,2)) + 1.67917e-3/(57.362 - 1/np.power(wave,2)) )
+			else: # unknown source
+				source.append('unknown')
 			wavelist.append(wave)
 			speclist.append(spec)
 		else:
@@ -76,12 +78,17 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 				spec = hdu[0].data
 			head = hdu[0].header
 		#	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
-		#	# Jean says... could do "if '.tres.' in line:" / "if '.ec.' in line". meh.
-			if head['imagetyp'] == 'object': source.append('arces')
-			if head['imagetyp'] == 'OBJECT': source.append('tres')
+			if '.tres.' in line: source.append('tres')
+			elif '.ec.' in line: source.append('arces')
+			else: source.append('unknown')
+#			if head['imagetyp'] == 'object': source.append('arces')
+#			if head['imagetyp'] == 'OBJECT': source.append('tres')
 		#	# *** end SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
 			filenamelist.append(infile)
-			datetime = head['date-obs']
+			try:
+				datetime = head['date-obs']
+			except:
+				datetime = head['date']
 			datetimelist.append(Time(datetime, scale='utc', format='isot'))
 			# Define the original wavelength scale
 			if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
@@ -97,6 +104,14 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 				minlength = min(len(wave), len(spec))
 				wave = wave[0:minlength]
 				spec = spec[0:minlength]
+			try: # check to see if we have a file with log angstroms
+				logcheck = head['dispunit'] 
+			except:
+				logcheck = 'linear' # hopefully, at least
+			if logcheck == 'log angstroms':
+				wave = np.power(10,wave) # make it linear
+				spec = spec / np.median(spec) # also normalize it to 1
+			#print(wave, spec)
 			wavelist.append(wave)
 			speclist.append(spec)
 		i = i + 1	
