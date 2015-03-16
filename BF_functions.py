@@ -13,18 +13,19 @@ Functions used in BF_python.py
 Read the damn comments
 '''
 
-def logify_spec(isAPOGEE = False):
+def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
 	# The new log-wavelength array will be w1. it will have equal spacing in velocity.
 	# please specify reasonable values below or else bad things will happen.
 	# note log = log base 10 because SERIOUSLY, come on now.
-	if isAPOGEE == True:
-		w00 = 15145		# starting wavelength of the log-wave array in Angstroms
-		n = 20000			# desired length of the log-wave vector in pixels (must be EVEN)
-	else:
-		w00 = 5400 #5055 		# starting wavelength of the log-wave array in Angstroms
-		n = 38750 #7000 		# desired length of the log-wave vector in pixels (must be EVEN) 
-	stepV = 1.7 #2.7 			# step in velocities in the wavelength vector w1
-	m = 171 				# length of BF (must be ODD)
+### GUIDELINES FOR CHOOSING GOOD INPUT VALUES ###
+#	if isAPOGEE == True:
+#		w00 = 15145		# starting wavelength of the log-wave array in Angstroms
+#		n = 20000			# desired length of the log-wave vector in pixels (must be EVEN)
+#	else:
+#		w00 = 5400 #5055 		# starting wavelength of the log-wave array in Angstroms
+#		n = 38750 #7000 		# desired length of the log-wave vector in pixels (must be EVEN) 
+#	stepV = 1.7 #2.7 			# step in velocities in the wavelength vector w1
+#	m = 171 				# length of BF (must be ODD)
 	r = stepV/299792.458 	# put stepV in km/s/pix
 	w1 = w00 * np.power((1+r), np.arange(float(n)))
 	print ('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
@@ -46,9 +47,10 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 			print('You have a text file. Reading BJD date from bjdinfile, not FITS header.')
 			# treat it like a text file
 			filenamelist.append(infile)
-			datetimelist.append( Time(np.loadtxt(open(bjdinfile), comments='#', dtype=np.float64, usecols=(1,), unpack=True)[i], scale='utc', format='jd') )
-			#datetimelist.append(Time('2015-01-01 00:00:00', scale='utc', format='iso')) # placeholder
-			wave, spec = np.loadtxt(open(infile), comments='#', dtype=np.float64, usecols=(0,1), unpack=True)
+			datetime = np.loadtxt(bjdinfile, comments='#', usecols=(1,), unpack=True)[i]
+			#print( datetime, 'text file' )
+			datetimelist.append(Time(datetime, scale='utc', format='jd'))
+			wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
 			if isAPOGEE == True: # we need to normalize it and sort by wavelength
 				source.append('apogee')
 				spec = spec / np.median(spec)
@@ -59,12 +61,14 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 #					wave = wave / (1 + 5.792105e-2/(238.0185 - 1/np.power(wave,2)) + 1.67917e-3/(57.362 - 1/np.power(wave,2)) )
 			else: # unknown source
 				source.append('unknown')
+			if infile[0:5] == 'trans': # you have a model telluric spectrum in nm, not A
+				wave = wave*10
 			wavelist.append(wave)
 			speclist.append(spec)
 		else:
 			# assume it's a FITS file
-		# Read in the FITS file with all the data in the primary HDU
-			hdu = fits.open(line)
+			# Read in the FITS file with all the data in the primary HDU
+			hdu = fits.open(infile)
 			if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, not normalized, and in VACUUM WAVELENGTHS !!
 				source.append('apogee')
 				spec = hdu[1].data ### APOGEE
@@ -89,6 +93,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 				datetime = head['date-obs']
 			except:
 				datetime = head['date']
+			#print(datetime, 'fits file')
 			datetimelist.append(Time(datetime, scale='utc', format='isot'))
 			# Define the original wavelength scale
 			if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
@@ -166,7 +171,7 @@ def rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvr
 	g1 = open(bjdinfile)
 	g2 = open(outfile, 'w')
 	print('Calculating RVs...')
-	bjdmid, bcv = np.loadtxt(g1, comments='#', dtype=np.float64, usecols=(1,2), unpack=True)
+	bjdmid, bcv = np.loadtxt(g1, comments='#', usecols=(1,2), unpack=True)
 	bjdfunny = bjdmid - 2454833.
 	phase = []
 	phase.append(0)

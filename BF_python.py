@@ -29,7 +29,7 @@ infiles:		single-column file with one FITS or TXT filename (w/ full path) per li
 			(the same template is used to find RVs for both stars)
 			NO comments are allowed in this file
 			FUN FACT: unless APOGEE, these should be continuum-normalized to 1 !!!
-bjdinfile: 	columns 0,1,2 must be FITS filename, BJD, BCV (e.g., from IRAF bcvcorr)
+bjdinfile: 	columns 0,1,2 must be filename, BJD, BCV (e.g., from IRAF bcvcorr)
 			top row must be for the template star (e.g., arcturus)
 			(the 0th column is never used, but typically looks like infiles_BF.txt)
 			one line per observation
@@ -56,24 +56,12 @@ print(' ')
 
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
-#infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
-#bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
-#gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
-#infiles = '../../RG_spectra/reduced_201405/kplr7037405/infiles_7037405_arces.txt'
-#bjdinfile = '../../RG_spectra/reduced_201405/kplr7037405/bjds_baryvels.txt'
-#gausspars = '../../RG_spectra/reduced_201405/kplr7037405/gaussfit_pars.txt'
-infiles = '../../RG_spectra/reduced_201405/kplr9246715/infiles_BF.txt'
 bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
 gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
-#infiles = '../../RG_spectra/infiles_model_BF.txt'
-#bjdinfile = '../../RG_spectra/bjds_baryvels_model.txt'
-#gausspars = '../../RG_spectra/gaussfit_pars_model.txt'
+infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
 
 # OUTPUT FILE THAT WILL BE WRITTEN TO
-#outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model_apogee.txt'
-#outfile = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
-outfile = '../../RG_spectra/rvs_out_arces2.txt'
-#outfile = '../../RG_spectra/APOGEE/rvs_out_apogee.txt'
+outfile = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False
@@ -83,6 +71,7 @@ BJD0 = 2455170.514777 #for 9246715
 #BJD0 = 2454905.625221 #for 7037405
 rvstd = 0 						# km/s; 0 if using a model spectrum
 bcvstd = 0 						# km/s; 0 if using model spectrum
+amp = 5.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
 #rvstd = 20.71053 # this is the TOTAL RV OFFSET FROM REST of the ARCES Arcturus observation
@@ -96,8 +85,8 @@ bcvstd = 0 						# km/s; 0 if using model spectrum
 # The wavelengths are w1.
 # The BF will be evenly spaced in velocity with length m.
 # The velocity steps are r (km/s/pix).
-w1, m, r = bff.logify_spec(isAPOGEE)
-amp = 5.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
+# Guidelines for choosing w00, n, stepV, and m are in the functions file.
+w1, m, r = bff.logify_spec(isAPOGEE, w00=5400, n=38750, stepV=1.7, m=171)
 
 # READ IN ALL THE THINGS
 nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
@@ -180,7 +169,7 @@ for i in range (1,nspec):
 	if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
 	elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
 	elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
-	else: plt.txt(0.9*xmin, 0.4*ymax, 'SOURCE?', color = 'k', size=12)
+	else: plt.text(0.9*xmin, 0.4*ymax, 'SOURCE?', color = 'k', size=12)
 	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, label='Smoothed BF')
 	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')	
 	if i==23: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
