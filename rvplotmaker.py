@@ -16,9 +16,13 @@ Update Dec 2014... this is getting awfully specific for my particular binary.
 Now there are three different symbols for three different telescope/instrument combos.
 '''
 
+doShift = False
+
 # File containing times, phases, and RVs as specified below
+filename = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
+#filename = '../../../Dropbox/KIC9246715/9246715_RVs_final.txt'
 #filename = 'rvs_out1.txt'
-filename = '../../RG_spectra/rvs_out_arces.txt'
+#filename = '../../RG_spectra/rvs_out_arces.txt'
 #filename = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
 #filename = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model.txt'
 #filename = '../../RG_spectra/rvs_out_arces.txt'
@@ -41,6 +45,15 @@ bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(f1, comments='#',
 	'formats': (np.float64, np.float64, np.float64, np.float64, np.float64, np.float64, '|S15')},
 	usecols=(0,1,3,4,5,6,7), unpack=True)
 f1.close()
+
+if doShift == True:
+	try:
+		shift = np.loadtxt('../../TelFit/9246715_telfit/telfit_RVshifts.txt', comments='#', usecols=(1,), unpack=True)
+		rv1 = rv1 - shift
+		rv2 = rv2 - shift
+		print('Shift applied')
+	except:
+		print('Could not find shift file')
 
 # Double the arrays so we can plot from phase 0 to phase 2 for clarity, if desired
 rv1_double = np.concatenate((rv1,rv1), axis=0)
