@@ -1,0 +1,26 @@
+# full file path													# RV offset +/- BF width
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120301.tres.fits			-3.48675 0.04645 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec_take5_120311.tres.fits 	-2.96637 0.04692 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120402.tres.fits			-3.60843 0.04798 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120508.tres.fits			-3.45883 0.04812 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120526.tres.fits			-3.29949 0.04822 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120602.tres.fits			-3.47443 0.04798 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120612.0030.ec.fits		-3.77338 0.05262 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120627.0015.ec.fits		-3.88438 0.04805 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120630.tres.fits			-3.20693 0.04830 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120724.tres.fits			-3.19200 0.04642 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120826.0003.ec.fits		-3.52634 0.05106 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120826.0031.ec.fits		-3.41660 0.04757 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120827.0023.ec.fits		-1.79732 0.04880 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120904.0024.ec.fits		-1.21820 0.04623 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120905.tres.fits			-3.64894 0.04789 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec120930.tres.fits			-3.27520 0.04796 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec121024.tres.fits			-2.87687 0.04569 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec121121.tres.fits			-3.38975 0.04729 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec130402.tres.fits			-3.07265 0.04708 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec130420.0013.ec.fits		-3.08995 0.05272 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec130613.0032.ec.fits		-2.02639 0.04859 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec130902.0020.ec.fits		-4.28452 0.05128 	
+../../RG_spectra/reduced_201405/kplr9246715/fullspec130909.0019.ec.fits		-3.42451 0.05068 
+#apogee_obs1														0		0
+#apogee_obs2														0		0
