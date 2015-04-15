@@ -19,11 +19,11 @@ Now there are three different symbols for three different telescope/instrument c
 doShift = False
 
 # File containing times, phases, and RVs as specified below
-filename = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
-#filename = '../../../Dropbox/KIC9246715/9246715_RVs_final.txt'
+#filename = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
+filename = '../../../Dropbox/KIC9246715/rvs_out_STPshift_smoothfix.txt'
 #filename = 'rvs_out1.txt'
 #filename = '../../RG_spectra/rvs_out_arces.txt'
-#filename = '../../RG_spectra/reduced_201405/kplr7037405/rvs_out_model_arces.txt'
+#filename = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_test.txt'
 #filename = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_model.txt'
 #filename = '../../RG_spectra/rvs_out_arces.txt'
 sysname = '9246715'

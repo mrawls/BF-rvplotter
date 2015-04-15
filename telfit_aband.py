@@ -54,7 +54,7 @@ rvstd = 0
 bcvstd = 0
 amp = 5.0
 w1, m, r = bff.logify_spec(isAPOGEE, w00=7595, n=1000, stepV=1.7, m=171)
-nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles='infiles2.txt', bjdinfile='times.txt')
+nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles='infiles_telfit.txt', bjdinfile='times.txt')
 
 # interpolate everything onto the same log-spaced grid
 newspeclist = []
