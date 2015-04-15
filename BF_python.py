@@ -56,15 +56,24 @@ print(' ')
 
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
-bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
-gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
-infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
+#bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
+#infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
+bjdinfile = '../../../Dropbox/KIC9246715/bjds_baryvels_apogee.txt'
+gausspars = '../../../Dropbox/KIC9246715/gaussfit_pars_apogee.txt'
+infiles = '../../../Dropbox/KIC9246715/infiles_BF_apogee.txt'
+#bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
+#infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
 
 # OUTPUT FILE THAT WILL BE WRITTEN TO
-outfile = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
+#outfile = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
+outfile = '../../../Dropbox/KIC9246715/rvs_out_phoenix_apogee2.txt'
+#outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_test.txt'
+#outfile = '../../../Dropbox/KIC9246715/rvs_out_STPshift_smoothfix.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
-isAPOGEE = False
+isAPOGEE = True
 period = 171.277967 #for 9246715
 BJD0 = 2455170.514777 #for 9246715
 #period = 207.150524 #for 7037405
@@ -86,7 +95,15 @@ amp = 5.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
 # The BF will be evenly spaced in velocity with length m.
 # The velocity steps are r (km/s/pix).
 # Guidelines for choosing w00, n, stepV, and m are in the functions file.
-w1, m, r = bff.logify_spec(isAPOGEE, w00=5400, n=38750, stepV=1.7, m=171)
+if isAPOGEE == True:
+	w00 = 15145
+	n = 20000 #15000 ... testing apogee?
+else:
+	w00 = 5400
+	n = 38750
+stepV = 1.7
+m = 171
+w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 
 # READ IN ALL THE THINGS
 nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
@@ -115,7 +132,7 @@ for i in range (0, nspec):
 	bf = svd.getBroadeningFunction(newspeclist[i]) # this one is like a matrix
 	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
 	# Smooth the array-like broadening function
-	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=1.5)
+	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=1.5, center=True)
 	# The rolling window makes nans at the start because it's a punk.
 	for j in range(0,len(bfsmooth)):
 		if np.isnan(bfsmooth[j]) == True:
@@ -155,7 +172,7 @@ fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
-	ax = fig.add_subplot(windowrows, windowcols,i)
+	ax = fig.add_subplot(windowrows, windowcols,i) # sometimes throws an index out of range error?
 	ax.yaxis.set_major_locator(MultipleLocator(0.2))
 	if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21 and i!=25:
 		ax.set_yticklabels(())
