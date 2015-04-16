@@ -14,6 +14,9 @@ Write out this model at STP.
 Fit this model to a FITS spectrum.
 Based on the examples provided in the TelFit-1.2 package, available
 here: http://www.as.utexas.edu/~kgulliks/projects.html
+
+Input: infiles_telfit.txt, times.txt, gaussfit_pars_telfit.txt
+Output: various plots and RV shift info printed to screen
 '''
 
 ##### first, the option to make a basic model...
@@ -79,7 +82,7 @@ for i in range (0, nspec):
 	bf = svd.getBroadeningFunction(newspeclist[i]) # this one is like a matrix
 	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
 	# Smooth the array-like broadening function
-	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=1.5)
+	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=1.5, center=True)
 	# The rolling window makes nans at the start because it's a punk.
 	for j in range(0,len(bfsmooth)):
 		if np.isnan(bfsmooth[j]) == True:
@@ -100,7 +103,7 @@ for i in range(1, nspec):
 plt.show()
 
 # fit the smoothed BFs with two gaussians (only one is really used here)
-bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty('gaussfit_pars.txt', nspec, filenamelist, bfsmoothlist, bf_ind)
+bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty('gaussfit_pars_telfit.txt', nspec, filenamelist, bfsmoothlist, bf_ind)
 
 # plot final BFs in individual panels
 # manually adjust this multi-panel plot based on how many spectra you have
