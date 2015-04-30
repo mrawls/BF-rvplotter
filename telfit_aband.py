@@ -15,9 +15,14 @@ Fit this model to a FITS spectrum.
 Based on the examples provided in the TelFit-1.2 package, available
 here: http://www.as.utexas.edu/~kgulliks/projects.html
 
-Input: infiles_telfit.txt, times.txt, gaussfit_pars_telfit.txt
+Input: three text files - telfitin, timefile, and gausspar
+(a list of FITS infiles, a list of timestamps, and guesses for velocity shifts)
 Output: various plots and RV shift info printed to screen
 '''
+
+telfitin = '../../../Dropbox/KIC9246715/rvstandards/infiles_telfit.txt'
+timefile = '../../../Dropbox/KIC9246715/rvstandards/times.txt'
+gausspar = '../../../Dropbox/KIC9246715/rvstandards/gaussfit_pars_telfit.txt'
 
 ##### first, the option to make a basic model...
 
@@ -57,7 +62,7 @@ rvstd = 0
 bcvstd = 0
 amp = 5.0
 w1, m, r = bff.logify_spec(isAPOGEE, w00=7595, n=1000, stepV=1.7, m=171)
-nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles='infiles_telfit.txt', bjdinfile='times.txt')
+nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles=telfitin, bjdinfile=timefile)
 
 # interpolate everything onto the same log-spaced grid
 newspeclist = []
@@ -103,7 +108,7 @@ for i in range(1, nspec):
 plt.show()
 
 # fit the smoothed BFs with two gaussians (only one is really used here)
-bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty('gaussfit_pars_telfit.txt', nspec, filenamelist, bfsmoothlist, bf_ind)
+bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspar, nspec, filenamelist, bfsmoothlist, bf_ind)
 
 # plot final BFs in individual panels
 # manually adjust this multi-panel plot based on how many spectra you have

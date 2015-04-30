@@ -9,10 +9,11 @@ Based partly on 'telluric.py', also by Meredith Rawls, but that one was crappy.
 (I wrote that a couple years ago, which is why some of the loop syntax is special.)
 
 Input: list of FITS spectra and shifts to be applied
-Output: new FITS files with shifted spectra
+Output: creates new FITS files with shifted spectra in the working directory
 '''
 
-shiftfile = 'telfit_RVshifts.txt'
+#shiftfile = 'telfit_RVshifts_really.txt'
+shiftfile = '../../../Dropbox/KIC9246715/rvstandards/telfit_shifttest.txt'
 infiles, velshiftlist = np.loadtxt(shiftfile, dtype={'names': ('infiles', 'velshiftlist'),
 	'formats': ('|S77', np.float64)}, usecols=(0,1), unpack=True)
 
@@ -22,10 +23,6 @@ dwave_new = 0.0455
 wavelen = 100000
 waveref = np.arange(wavelen)*dwave_new + wavestart_new
 c = 2.99792e18 #angstroms per sec
-
-# TEST TEST TEST
-#for vel in velshiftlist:
-#	vel = -1*vel
 
 # Loop over each FITS spectrum, read things in, define wavelength & pixel scales
 nspec = len(infiles)
@@ -80,7 +77,7 @@ headernote = 'Modified w/ telluric shift'
 for i in range (0, nspec):
 	outfile = 's_' + infiles[i][-24:]
 	# Read in the original FITS header
-	hdu = fits.open(infile)
+	hdu = fits.open(infiles[i])
 	head = hdu[0].header
 	# Make a new FITS file with the new data and old header
 	hdu = brandnewspeclist[i]

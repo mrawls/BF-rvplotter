@@ -20,7 +20,7 @@ doShift = False
 
 # File containing times, phases, and RVs as specified below
 #filename = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
-filename = '../../../Dropbox/KIC9246715/rvs_out_STPshift_smoothfix.txt'
+filename = '../../../Dropbox/KIC9246715/9246715_rvs_final_REALLY.txt'
 #filename = 'rvs_out1.txt'
 #filename = '../../RG_spectra/rvs_out_arces.txt'
 #filename = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_test.txt'
