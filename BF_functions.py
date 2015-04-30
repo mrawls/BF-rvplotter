@@ -16,7 +16,6 @@ Read the damn comments
 def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
 	# The new log-wavelength array will be w1. it will have equal spacing in velocity.
 	# please specify reasonable values below or else bad things will happen.
-	# note log = log base 10 because SERIOUSLY, come on now.
 ### GUIDELINES FOR CHOOSING GOOD INPUT VALUES ###
 #	if isAPOGEE == True:
 #		w00 = 15145		# starting wavelength of the log-wave array in Angstroms

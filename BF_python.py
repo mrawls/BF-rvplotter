@@ -56,24 +56,26 @@ print(' ')
 
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
-#bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
-#gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
-#infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
-bjdinfile = '../../../Dropbox/KIC9246715/bjds_baryvels_apogee.txt'
-gausspars = '../../../Dropbox/KIC9246715/gaussfit_pars_apogee.txt'
-infiles = '../../../Dropbox/KIC9246715/infiles_BF_apogee.txt'
+bjdinfile = '../../RG_spectra/reduced_201405/kplr9246715/bjds_baryvels.txt'
+gausspars = '../../RG_spectra/reduced_201405/kplr9246715/gaussfit_pars.txt'
+infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
+
+#bjdinfile = '../../../Dropbox/KIC9246715/bjds_baryvels_apogee.txt'
+#gausspars = '../../../Dropbox/KIC9246715/gaussfit_pars_apogee.txt'
+#infiles = '../../../Dropbox/KIC9246715/infiles_BF_apogee.txt'
+
 #bjdinfile = '../../RG_spectra/APOGEE/KIC7037405/bjds_baryvels.txt'
 #gausspars = '../../RG_spectra/APOGEE/KIC7037405/gaussfit_pars.txt'
 #infiles = '../../RG_spectra/APOGEE/KIC7037405/infiles_7037405_apogee.txt'
 
 # OUTPUT FILE THAT WILL BE WRITTEN TO
 #outfile = '../../TelFit/9246715_telfit/rvs_out_STPshift.txt'
-outfile = '../../../Dropbox/KIC9246715/rvs_out_phoenix_apogee2.txt'
+#outfile = '../../../Dropbox/KIC9246715/rvs_out_phoenix_apogee2.txt'
 #outfile = '../../RG_spectra/APOGEE/KIC7037405/rvs_out_test.txt'
-#outfile = '../../../Dropbox/KIC9246715/rvs_out_STPshift_smoothfix.txt'
+outfile = '../../../Dropbox/KIC9246715/rvs_out_STPshift_smoothfix.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
-isAPOGEE = True
+isAPOGEE = False
 period = 171.277967 #for 9246715
 BJD0 = 2455170.514777 #for 9246715
 #period = 207.150524 #for 7037405
