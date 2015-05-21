@@ -34,16 +34,25 @@ def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
 def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', isAPOGEE = False):
 	f1 = open(infiles)
 	print('Reading files from 1st column in %s' % infiles)
-	print('The first one had better be your template spectrum.')
+	#print('The first one had better be your template spectrum.')
 	print(' ')
 	speclist = []; wavelist = []
 	filenamelist = []; datetimelist = []
 	source = [] # option: keep track of which spectrograph was used (ARCES vs. TRES)
+	if isAPOGEE == False:
+		checkAPOGEE = True #notallinfiles are APOGEE, but let's check in case *some* are
 	i = 0
 	for line in f1: # This loop happens once for each spectrum
 		infile = line.rstrip()
+		if checkAPOGEE == True: # check to see if a subset of infiles are from APOGEE or not
+			if 'apogee' in infile or 'APOGEE' in infile:
+				isAPOGEE = True
+				print('Filename {0} contains APOGEE, setting isAPOGEE to True.'.format(infile))
+			else:
+				isAPOGEE = False
+				print('Filename {0} does not contain APOGEE, setting isAPOGEE to False.'.format(infile))
 		if infile[-3:] == 'txt':
-			print('You have a text file. Reading BJD date from bjdinfile, not FITS header.')
+			print('Text file. Reading BJD date from bjdinfile, not FITS header.')
 			# treat it like a text file
 			filenamelist.append(infile)
 			datetime = np.loadtxt(bjdinfile, comments='#', usecols=(1,), unpack=True)[i]
@@ -115,7 +124,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 			if logcheck == 'log angstroms':
 				wave = np.power(10,wave) # make it linear
 				spec = spec / np.median(spec) # also normalize it to 1
-			#print(wave, spec)
+			print(wave, spec)
 			wavelist.append(wave)
 			speclist.append(spec)
 		i = i + 1	
