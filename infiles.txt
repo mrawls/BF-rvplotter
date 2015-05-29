@@ -1,8 +1,0 @@
-../../RG_spectra/reduced_201405/kplr9246715/fullspec120301.tres.fits
-../../RG_spectra/reduced_201405/kplr9246715/fullspec_take5_120311.tres.fits
-../../RG_spectra/reduced_201405/kplr9246715/new_fullspec120612.0030.ec.fits
-../../RG_spectra/reduced_201405/kplr9246715/new_fullspec120627.0015.ec.fits
-../../TelFit/9246715_telfit/s_fullspec120301.tres.fits
-../../TelFit/9246715_telfit/s_c_take5_120311.tres.fits
-../../TelFit/9246715_telfit/s_lspec120612.0030.ec.fits
-../../TelFit/9246715_telfit/s_lspec120627.0015.ec.fits

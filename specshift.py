@@ -12,16 +12,17 @@ Input: list of FITS spectra and shifts to be applied
 Output: creates new FITS files with shifted spectra in the working directory
 '''
 
-#shiftfile = 'telfit_RVshifts_really.txt'
-shiftfile = '../../../Dropbox/KIC9246715/rvstandards/telfit_shifttest.txt'
+shiftfile = 'telfit_RVshifts_really.txt'
+#shiftfile = '../../../Dropbox/KIC9246715/rvstandards/telfit_shifttest.txt'
 infiles, velshiftlist = np.loadtxt(shiftfile, dtype={'names': ('infiles', 'velshiftlist'),
 	'formats': ('|S77', np.float64)}, usecols=(0,1), unpack=True)
 
 # Manually define a 1D wavelength array that will be used for interpolation
 wavestart_new = 3850.
 dwave_new = 0.0455
-wavelen = 100000
+wavelen = 107000
 waveref = np.arange(wavelen)*dwave_new + wavestart_new
+print('Wavelength range: {0} - {1}'.format(waveref[0], waveref[-1]))
 c = 2.99792e18 #angstroms per sec
 
 # Loop over each FITS spectrum, read things in, define wavelength & pixel scales

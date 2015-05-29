@@ -19,13 +19,13 @@ To run: python splot.py infiles.txt
 
 import sys
 infiles = sys.argv[1]
-bjdfile = '../../FDBinary/9246715/bjds_baryvels_apogee.txt'
+bjdfile = '../../FDBinary/9246715/bjds_baryvels.txt'
 	# note: bcvin is never really used here, but you have to give it some file
 	# with the correct length because of how read_specfiles is set up
 #linelist = '../../MOOG/ares_v1.0/yong_fe2_jeanversion.txt'
 #refspec = '../../../Dropbox/KIC9246715/phoenix_air_jean.txt'
-refspec = '../../RG_spectra/APOGEE/model_rg_apogee.txt'
-isAPOGEE = False
+#refspec = '../../RG_spectra/APOGEE/model_rg_apogee.txt' OPTION to plot this too, see end
+isAPOGEE = False # read_specfiles will check to see if apogee is actually true
 #if 'apogee' in infiles:
 #	isAPOGEE = True
 #	print('Setting isAPOGEE to True')
@@ -79,10 +79,10 @@ for i, (wave, spec, datetime) in enumerate(zip(wavelist, speclist, datetimelist)
 	plt.plot(wave, spec + 2*i, color='b', marker='.', mfc='k')#
 	i = i + yoffset
 
-# Plot text file reference spectrum here
-waveref, fluxref = np.loadtxt(refspec, usecols=(0,1), unpack=True)
-fluxref = fluxref + 2*i #apply yoffset
-plt.plot(waveref, fluxref, color='r', marker='.', mfc='k')
+# OPTION: plot text file reference spectrum here
+#waveref, fluxref = np.loadtxt(refspec, usecols=(0,1), unpack=True)
+#fluxref = fluxref + 2*i #apply yoffset
+#plt.plot(waveref, fluxref, color='r', marker='.', mfc='k')
 
 # Plot random vertical lines here
 #xvals = np.loadtxt(linelist, comments='#', usecols=(0,), unpack=True)
