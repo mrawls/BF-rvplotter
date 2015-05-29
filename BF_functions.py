@@ -32,6 +32,11 @@ def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
 	return w1, m, r
 
 def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', isAPOGEE = False):
+	'''
+	Read in some FITS or TXT files that are spectra and may or may not be APOGEE
+	Requires 	infiles, bjdinfile, isAPOGEE
+	Returns 	nspec, filenamelist, datetimelist, wavelist, speclist, source
+	'''
 	f1 = open(infiles)
 	print('Reading files from 1st column in %s' % infiles)
 	#print('The first one had better be your template spectrum.')
@@ -47,18 +52,21 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 		if checkAPOGEE == True: # check to see if a subset of infiles are from APOGEE or not
 			if 'apogee' in infile or 'APOGEE' in infile:
 				isAPOGEE = True
-				print('Filename {0} contains APOGEE, setting isAPOGEE to True.'.format(infile))
+				#print('Filename {0} contains APOGEE, setting isAPOGEE to True.'.format(infile))
 			else:
 				isAPOGEE = False
-				print('Filename {0} does not contain APOGEE, setting isAPOGEE to False.'.format(infile))
+				#print('Filename {0} does not contain APOGEE, setting isAPOGEE to False.'.format(infile))
 		if infile[-3:] == 'txt':
-			print('Text file. Reading BJD date from bjdinfile, not FITS header.')
 			# treat it like a text file
 			filenamelist.append(infile)
 			datetime = np.loadtxt(bjdinfile, comments='#', usecols=(1,), unpack=True)[i]
-			#print( datetime, 'text file' )
 			datetimelist.append(Time(datetime, scale='utc', format='jd'))
-			wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
+			try:
+				wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
+				print('Text file {0}, isAPOGEE = {1}, date from bjdinfile is {2}'.format(infile, isAPOGEE, datetime))
+			except:
+				print('{0} not found or cannot be opened'.format(infile))
+				continue
 			if isAPOGEE == True: # we need to normalize it and sort by wavelength
 				source.append('apogee')
 				spec = spec / np.median(spec)
@@ -76,7 +84,17 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 		else:
 			# assume it's a FITS file
 			# Read in the FITS file with all the data in the primary HDU
-			hdu = fits.open(infile)
+			try:
+				hdu = fits.open(infile)
+				head = hdu[0].header
+				filenamelist.append(infile)
+				try: datetime = head['date-obs']
+				except: datetime = head['date']
+				datetimelist.append(Time(datetime, scale='utc', format='isot'))
+				print('FITS file {0}, isAPOGEE = {1}, date from header is {2}'.format(infile, isAPOGEE, datetime))
+			except:
+				print('{0} not found or cannot be opened'.format(infile))
+				continue
 			if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, not normalized, and in VACUUM WAVELENGTHS !!
 				source.append('apogee')
 				spec = hdu[1].data ### APOGEE
@@ -88,7 +106,6 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 #					wave = wave / (1 + 5.792105e-2/(238.0185 - 1/np.power(wave,2)) + 1.67917e-3/(57.362 - 1/np.power(wave,2)) )
 			else: # non-APOGEE (regular) option
 				spec = hdu[0].data
-			head = hdu[0].header
 		#	# *** begin SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
 			if '.tres.' in line: source.append('tres')
 			elif '.ec.' in line: source.append('arces')
@@ -96,13 +113,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 #			if head['imagetyp'] == 'object': source.append('arces')
 #			if head['imagetyp'] == 'OBJECT': source.append('tres')
 		#	# *** end SPECIAL FOR MORE THAN ONE SPECTROGRAPH (ARCES + TRES) ONLY ***
-			filenamelist.append(infile)
-			try:
-				datetime = head['date-obs']
-			except:
-				datetime = head['date']
-			#print(datetime, 'fits file')
-			datetimelist.append(Time(datetime, scale='utc', format='isot'))
+
 			# Define the original wavelength scale
 			if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
 				wave = hdu[4].data ### APOGEE
@@ -124,7 +135,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
 			if logcheck == 'log angstroms':
 				wave = np.power(10,wave) # make it linear
 				spec = spec / np.median(spec) # also normalize it to 1
-			print(wave, spec)
+			#print(wave, spec)
 			wavelist.append(wave)
 			speclist.append(spec)
 		i = i + 1	
