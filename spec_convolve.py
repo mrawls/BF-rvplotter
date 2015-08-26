@@ -28,10 +28,10 @@ hopefully a model spectrum text file that ends in '.bf.arces.txt' or '.bf.apogee
 no='no'
 yes='yes'
 
-# Tell python where to look for convspec and the associated parameter file
+# Tell python where to look for convspec directory and the associated parameter file
 #convspecexe = '/home/tequila/jeanm12/convspec/convspec'
-convspecexe = '../jeanshare/convspec/convspec'
-convspecpar = '../jeanshare/convspec.par'
+convspecexe = 'convspec'
+convspecpar = 'convspec.par'
 
 def read_fits(fits):
    '''
