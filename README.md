@@ -16,3 +16,4 @@ and here: http://www.hs.uni-hamburg.de/DE/Ins/Per/Czesla/PyA/PyA/pyaslDoc/aslDoc
 * telfit_aband.py creates a model telluric spectrum of the O2 A-band and/or uses the BF technique to calculate velocity shifts. Useful if you forgot to take standard spectra or have a fussy spectrograph with a changing wavelength solution.
 * telfit_plot.py plots a model telluric spectrum on top of an actual spectrum
 * specshift.py applies velocity shifts to a set of FITS spectra
+* spec_convolve.py convolves a spectrum to a resolution of your choice using FORTRAN convspec (bonus: the convspec directory includes a compiled FORTRAN binary which works on my OS X 10.10.5!)
