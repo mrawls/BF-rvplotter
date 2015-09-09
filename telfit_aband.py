@@ -14,17 +14,32 @@ Write out this model at STP.
 Fit this model to a FITS spectrum.
 Based on the examples provided in the TelFit-1.2 package, available
 here: http://www.as.utexas.edu/~kgulliks/projects.html
+This is kind of hacked together and loosely based on BF_python.py...
 
 Input: three text files - telfitin, timefile, and gausspar
-(a list of FITS infiles, a list of timestamps, and guesses for velocity shifts)
-Output: various plots and RV shift info printed to screen
+(a list of FITS infiles, a list of JD timestamps, and guesses for velocity shifts)
+The timefile contents don't matter one bit here
+
+Output: two plots in succession (like BF_python.py), and RV shift info printed to screen
+(manually save the shift info if you want, and then use specshift.py to remove the shift)
 '''
 
-telfitin = '../../../Dropbox/KIC9246715/rvstandards/infiles_telfit.txt'
-timefile = '../../../Dropbox/KIC9246715/rvstandards/times.txt'
-gausspar = '../../../Dropbox/KIC9246715/rvstandards/gaussfit_pars_telfit.txt'
+#telfitin = '../../../Dropbox/KIC9246715/rvstandards/infiles_telfit.txt'
+#timefile = '../../../Dropbox/KIC9246715/rvstandards/times.txt'
+#gausspar = '../../../Dropbox/KIC9246715/rvstandards/gaussfit_pars_telfit.txt'
+
+telfitin = '../../RG_spectra/7037405/infiles_arcesBF_telfit.txt'
+timefile = '../../RG_spectra/7037405/bjdinfile_arcesBF.txt'
+gausspar = '../../RG_spectra/7037405/gausspars_telfit.txt'
+
+# Parameters for the broadening function (don't change w00 or n if you want the A-band!)
+w00 = 7595
+n = 1000
+stepV = 1.5
+mbf = 171
 
 ##### first, the option to make a basic model...
+# once this file exists, you don't have to re-create it each time
 
 temp = 273.15 # Kelvin
 pres = 1013.25 # hPa (1 hectoPascal = 100 Pa = 1 mbar)
@@ -55,13 +70,13 @@ co = 1.40/10
 ##### next, compare the model with a real spectrum and find the RV shift...
 
 # set variables and read stuff in
-isAPOGEE = False
-period = 1.0
-BJD0 = 2450000.0
-rvstd = 0
-bcvstd = 0
-amp = 5.0
-w1, m, r = bff.logify_spec(isAPOGEE, w00=7595, n=1000, stepV=1.7, m=171)
+isAPOGEE = False # a necessary bff.logify_spec parameter
+period = 1.0 # nobody cares
+BJD0 = 2450000.0 # nobody cares
+rvstd = 0 # there's no standard star
+bcvstd = 0 # there's no standard star
+amp = 5.0 # arbitrary multiplication factor
+w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, mbf)
 nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles=telfitin, bjdinfile=timefile)
 
 # interpolate everything onto the same log-spaced grid
@@ -98,24 +113,24 @@ for i in range (0, nspec):
 bf_ind = svd.getRVAxis(r, 1)
 
 # plot the smoothed BFs
-plt.axis([-100, 70, -0.2, 12])
-plt.xlabel('Velocity (km s$^{-1}$)')
-plt.ylabel('Broadening Function (arbitrary amplitude)')
-yoffset = 0.0
-for i in range(1, nspec):
-	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
-	yoffset = yoffset + 0.4
-plt.show()
+# this plot is boring, skip it
+#plt.axis([-100, 70, -0.2, 12])
+#plt.xlabel('Velocity (km s$^{-1}$)')
+#plt.ylabel('Broadening Function (arbitrary amplitude)')
+#yoffset = 0.0
+#for i in range(1, nspec):
+#	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
+#	yoffset = yoffset + 0.4
+#plt.show()
 
 # fit the smoothed BFs with two gaussians (only one is really used here)
 bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspar, nspec, filenamelist, bfsmoothlist, bf_ind)
 
 # plot final BFs in individual panels
-# manually adjust this multi-panel plot based on how many spectra you have
-windowcols = 4		# how many window columns there should be
-windowrows = 6		# how many window rows there should be
-xmin = -79
-xmax = 79
+windowcols = 4		                        # how many window columns there should be
+windowrows = np.rint(nspec/windowcols)+1	# how many window rows there should be
+xmin = -19
+xmax = 19
 ymin = -0.05
 ymax = 0.7
 fig = plt.figure(1, figsize=(15,10))
@@ -131,12 +146,6 @@ for i in range (1,nspec):
 	plt.subplots_adjust(wspace=0, hspace=0)
 	plt.axis([xmin, xmax, ymin, ymax])
 	plt.tick_params(axis='both', which='major', labelsize=14)
-	#plt.text(0.9*xmin, 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
-	#plt.text(0.9*xmin, 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
-	if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
-	elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
-	elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
-	else: plt.text(0.9*xmin, 0.4*ymax, 'SOURCE?', color = 'k', size=12)
 	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, label='Smoothed BF')
 	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')	
 	if i==23: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
