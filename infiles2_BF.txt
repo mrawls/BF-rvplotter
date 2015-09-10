@@ -1,3 +1,0 @@
-../../RG_spectra/APOGEE/alpha_Boo.fits
-../../RG_spectra/APOGEE/KIC9246715_obs1.fits
-../../RG_spectra/APOGEE/KIC9246715_obs2.fits
