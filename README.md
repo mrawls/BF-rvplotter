@@ -16,19 +16,20 @@ and here: http://www.hs.uni-hamburg.de/DE/Ins/Per/Czesla/PyA/PyA/pyaslDoc/aslDoc
 * `specshift.py` applies velocity shifts to a set of FITS spectra
 * `spec_convolve.py` convolves a spectrum to a resolution of your choice using FORTRAN convspec (bonus: the convspec directory includes a compiled FORTRAN binary which works on my OS X 10.10.5!)
 
+Walkthrough
 ============
 
 So you have a bunch of spectra of a presumably double-lined eclipsing binary, and you want a nice radial velocity (RV) curve via the broadening function (BF) technique. Let's further assume you don't have RV standard star observations and you want to use the telluric A-band to nudge all the spectra into something closer to an RV standard alignment.
 
 This process is written specifically for a set of optical ARCES echelle spectra which have been reduced and combined into a single order, but it can work for any kind of 1D spectra, such as APOGEE IR spectra (skip the telluric line alignment part in that case).
 
-(1) Get some appropriate template/model files.
+**(1) Get some appropriate template/model files.**
 
 **telluricspec.txt** (or .fits) - probably created with the telfit MakeModel
 
-**templateBF.fits** (or .txt) - either a model PHOENIX spectra with stellar parameters vaguely close to the target, or a real star spectrum also vaguely similar to the target. Either way, you need similar (or higher) resolution and the same wavelength coverage as the target. If you use a real star, you need to know its barycentric velocity (due to the Earth/Sun orbit) as well as its systemic velocity (relative to our Solar System) and remove these first (specshift.py can help!).
+**templateBF.fits** (or .txt) - either a model spectrum with stellar parameters vaguely close to the target, or a real star spectrum also vaguely similar to the target. Either way, you need similar (or higher) resolution and the same wavelength coverage as the target. If you use a real star, you need to know its barycentric velocity (due to the Earth/Sun orbit) as well as its systemic velocity (relative to our Solar System) and remove these first (`specshift.py` can help!).
 
-(2) Make some text files.
+**(2) Make some text files.**
 
 **infiles_telfit.txt** - a list of full paths to all the observed spectra (easy!). No comments or shenanigans in this file.
 
@@ -42,7 +43,7 @@ This process is written specifically for a set of optical ARCES echelle spectra 
 
 **gaussparsBF.txt** - similar to `gausspars_telfit.txt`, only now we're guessing actual RVs for shift1 and shift2 instead of "0 and get out of the way." Feel free to copy `gausspars_telfit.txt` to get started, edit this file after you run `BF_python.py` and are looking at the BF peaks, then run `BF_python.py` again until all the BF peaks are being fit nicely.
 
-(3) Prepare some python scripts.
+**(3) Prepare some python scripts.**
 
 **telfit_aband.py** - calculate small RV offsets based on telluric A-band model.
 INPUT: `infiles_telfit.txt`, `bjdinfile.txt`, `gausspars_telfit.txt`.
@@ -60,6 +61,6 @@ OUTPUT: text file with radial velocities! The columns are BJD_mid, phase, Kep_BJ
 INPUT: output from `BF_python.py`.
 OUTPUT: plot only.
 
-(4) Stand back and attempt science.
+**(4) Stand back and attempt science.**
 
 Run the programs in the order listed above. You'll need to run `BF_python.py` more than once as you adjust the values in `gaussparsBF.txt`.
