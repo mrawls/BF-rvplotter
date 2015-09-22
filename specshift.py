@@ -10,9 +10,17 @@ Result is New_Wavelength = Old_Wavelength - Shift_Value.
 
 Input: text file containing a list of FITS spectra and shifts to be applied
 Output: creates new FITS files with shifted spectra **in the working directory**
+
+NOTE: this is how Jean shifts spectra instead. It's, uh, easier, but uses IRAF.
+
+## Shift the spectra by rv1 amount... using iraf dopcor ##
+for i in range(1,len(filenamelist)):
+    iraf.dopcor(filenamelist[i],'shifted_'+filenamelist[i][-27:],rvraw1[i],
+		isvelocity=yes,add=no,dispersion=yes,flux=no,factor=3.0,verbose=yes)
+## Shift the spectra by rv1 amount... using iraf dopcor ##
 '''
 
-shiftfile = '../../RG_spectra/7037405/shifts_arcesBF_telfit.txt'
+shiftfile = '../../RG_spectra/10001167/shifts_arcesBF_telfit.txt'
 
 infiles, velshiftlist = np.loadtxt(shiftfile, dtype={'names': ('infiles', 'velshiftlist'),
 	'formats': ('|S77', np.float64)}, usecols=(0,1), unpack=True)
