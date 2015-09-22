@@ -19,7 +19,8 @@ To run: python splot.py infiles.txt
 
 import sys
 infiles = sys.argv[1]
-bjdfile = '../../FDBinary/9246715/bjds_baryvels.txt'
+#bjdfile = '../../FDBinary/9246715/bjds_baryvels.txt'
+bjdfile = '../../RG_spectra/7037405/bjdinfile_arces.txt'
 	# note: bcvin is never really used here, but you have to give it some file
 	# with the correct length because of how read_specfiles is set up
 #linelist = '../../MOOG/ares_v1.0/yong_fe2_jeanversion.txt'

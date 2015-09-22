@@ -23,20 +23,22 @@ compareRVs = False
 
 # File containing times, phases, and RVs as specified below
 #filename = '../../RG_spectra/7037405/rvoutfile3_arcesBF.txt'
-filename = '../../RG_spectra/7037405/rvs_all.txt'
+#filename = '../../RG_spectra/7037405/rvs_all.txt'
+filename = '../../RG_spectra/5786154/rvs_final.txt'
 
 #sysname = '9246715'
-sysname = '7037405'
+#sysname = '7037405'
+sysname = '5786154'
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
-timestart = 1500
-timeend = 2400
+timestart = 1200 #1500
+timeend = 2200 #2400
 phasemin = 0.5
 phasemax = 1.5
-RVmin = -90
-RVmax = 20
+RVmin = -69
+RVmax = 49
 
 bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(filename, comments='#', 
     dtype={'names': ('bjd', 'phase', 'rv1', 'rverr1', 'rv2', 'rverr2', 'source'),
@@ -162,6 +164,6 @@ plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_ancho
 fig.text(0.07, 0.5, 'Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=24, rotation='vertical')
 fig.text(0.14, 0.115, 'Folded', size=24)
 fig.text(0.14, 0.55, 'Unfolded', size=24)
-#fig.text(0.2, 0.9, sysname, size=32)
+fig.text(0.2, 0.9, sysname, size=32)
 
 plt.show()
