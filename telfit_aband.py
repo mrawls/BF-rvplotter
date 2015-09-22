@@ -24,14 +24,11 @@ The timefile contents don't matter one bit here
 Output: two plots in succession (like BF_python.py), and RV shift info printed to screen
 (manually save the shift info if you want, and then use specshift.py to remove the shift)
 '''
-telfitin = '../../RG_spectra/3955867/infiles_arcesBF_telfit.txt'
-timefile = '../../RG_spectra/3955867/bjdinfile_arcesBF.txt'
-gausspar = '../../RG_spectra/3955867/gausspars_telfit.txt'
-shiftfile = '../../RG_spectra/3955867/shifts_arcesBF_telfit.txt'
 
-#telfitin = '../../RG_spectra/7037405/infiles_arcesBF_telfit.txt'
-#timefile = '../../RG_spectra/7037405/bjdinfile_arcesBF.txt'
-#gausspar = '../../RG_spectra/7037405/gausspars_telfit.txt'
+telfitin =  '../../RG_spectra/9970396/infiles_arcesBF_telfit.txt'
+timefile =  '../../RG_spectra/9970396/bjdinfile_arcesBF.txt'
+gausspar =  '../../RG_spectra/9970396/gausspars_telfit.txt'
+shiftfile = '../../RG_spectra/9970396/shifts_TEST.txt'
 
 # Parameters for the broadening function (don't change w00 or n if you want the A-band!)
 w00 = 7595
@@ -125,7 +122,12 @@ bf_ind = svd.getRVAxis(r, 1)
 #plt.show()
 
 # fit the smoothed BFs with two gaussians (only one is really used here)
-bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspar, nspec, filenamelist, bfsmoothlist, bf_ind)
+bffitlist = bff.gaussparty(gausspar, nspec, filenamelist, bfsmoothlist, bf_ind)
+rvraw1 = []; rvraw1_err = []
+rvraw1.append(0), rvraw1_err.append(0)
+for i in range(1, len(bffitlist)):
+    rvraw1.append(bffitlist[i][0][1])
+    rvraw1_err.append(bffitlist[i][2][1])
 
 # write results of the first fit gaussian only to an outfile
 outfile = open(shiftfile, 'w')

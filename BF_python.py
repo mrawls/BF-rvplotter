@@ -51,31 +51,29 @@ spectra with the 'isAPOGEE' flag. You also need to set the binary's PERIOD and B
 both in days, and the constant RV and BCV of whatever template you are using.
 '''
 
-print('Welcome to BF_python.py! It\'s broadening function time.')
-print(' ')
-
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
-infiles = '../../RG_spectra/7037405/infiles2_arcesBF.txt'
-bjdinfile = '../../RG_spectra/7037405/bjdinfile_arcesBF.txt'
-gausspars = '../../RG_spectra/7037405/gausspars_arcesBF.txt'
-
-#infiles = '../../RG_spectra/7037405/infiles_apogeeBF.txt'
-#bjdinfile = '../../RG_spectra/7037405/bjdinfile_apogeeBF.txt'
-#gausspars = '../../RG_spectra/7037405/gausspars_apogeeBF.txt'
-
-# OUTPUT FILE THAT WILL BE WRITTEN TO
-outfile = '../../RG_spectra/7037405/rvoutfile3_arcesBF.txt'
-
-#outfile = '../../RG_spectra/7037405/rvoutfile_apogeeBF.txt'
+# THE OUTPUT FILE WILL BE CREATED FOR YOU
+infiles =   '../../RG_spectra/10001167/infiles_arcesBF.txt'
+bjdinfile = '../../RG_spectra/10001167/bjdinfile_arcesBF.txt'
+gausspars = '../../RG_spectra/10001167/gaussfit_arcesBF.txt'
+outfile =   '../../RG_spectra/10001167/rvoutfile1_arcesBF.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False
-period = 207.150524 #for 7037405        #period = 171.277967 #for 9246715
-BJD0 = 2454905.625221 #for 7037405      #BJD0 = 2455170.514777 #for 9246715 
-rvstd = 0 						# km/s; 0 if using a model spectrum
-bcvstd = 0 						# km/s; 0 if using model spectrum
-amp = 7.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
+period = 120.390971
+BJD0 = 2454957.586519
+rvstd = 0 			# km/s; constant RV offset of your template (0 if using a model)
+bcvstd = 0 			# km/s; barycentric RV of your template (0 if using a model)
+amp = 7.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (function of instrument resolution)
+m = 251             # length of the BF (must be longer if RVs are far from 0)
+#m = 171
+
+# STUFF TO MAKE PLOTS LOOK NICE
+rvneg = -180
+rvpos = 20
+
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
 #rvstd = 20.71053 # this is the TOTAL RV OFFSET FROM REST of the ARCES Arcturus observation
@@ -84,6 +82,11 @@ amp = 7.0		# amplitude to stretch the smoothed BFs by (y-direction) for clarity
 #bcvstd = -0.155355148339 # APOGEE Arcturus bcv
 #bcvstd = 18.4574 # ARCES Arcturus bcv
 ##########
+
+print('Welcome to BF_python.py! It\'s broadening function time.')
+print(' ')
+print('You have set Porb = {0} days, BJD0 = {1}'.format(period, BJD0))
+print(' ')
 
 # CREATE NEW SPECTRUM IN LOG SPACE
 # The wavelengths are w1.
@@ -99,13 +102,13 @@ else:
 	w00 = 4000
 	n = 90000
 stepV = 1.5
-m = 171
 w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 
 # READ IN ALL THE THINGS
 nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
+#plt.figure(1)
 newspeclist = []
 yoffset = 1
 plt.axis([w1[0], w1[-1], 0, 27])
@@ -129,7 +132,7 @@ for i in range (0, nspec):
 	bf = svd.getBroadeningFunction(newspeclist[i]) # this one is like a matrix
 	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
 	# Smooth the array-like broadening function
-	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=1.5, center=True)
+	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
 	# The rolling window makes nans at the start because it's a punk.
 	for j in range(0,len(bfsmooth)):
 		if np.isnan(bfsmooth[j]) == True:
@@ -139,30 +142,45 @@ for i in range (0, nspec):
 # Obtain the indices in RV space that correspond to the BF
 bf_ind = svd.getRVAxis(r, 1)
 
-# PLOT THE SMOOTHED BFs (option)
-# this helps you estimate the location of each peak so you can update gausspars NOW!
-#plt.axis([-100, 70, -0.2, 12])
-#plt.xlabel('Radial Velocity (km s$^{-1}$)')
-#plt.ylabel('Broadening Function (arbitrary amplitude)')
-#yoffset = 0.0
-#for i in range(1, nspec):
-#	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
-#	yoffset = yoffset + 0.4
+# PLOT THE RESULT OF THE SINGLE VALUE DECOMPOSITION TO SEE IF IT IS TERRIBLE OR NOT
+# NOT READY YET
+#plt.figure(2)
+#plt.plot(m, svd)
 #plt.show()
 
+# PLOT THE SMOOTHED BFs (option)
+# this helps you estimate the location of each peak so you can update gausspars NOW!
+#plt.figure(3)
+plt.axis([rvneg, rvpos, -0.2, 12])
+plt.xlabel('Radial Velocity (km s$^{-1}$)')
+plt.ylabel('Broadening Function (arbitrary amplitude)')
+yoffset = 0.0
+for i in range(1, nspec):
+	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
+	yoffset = yoffset + 0.4
+plt.show()
+
 # FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
-# you have to have pretty decent guesses in gausspars for this to work.
-bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind)
+# you have to have pretty decent guesses in the gausspars file for this to work.
+bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind)
+rvraw1 = []; rvraw2 = []; rvraw1_err = []; rvraw2_err = []
+rvraw1.append(0), rvraw2.append(0), rvraw1_err.append(0), rvraw2_err.append(0)
+for i in range(1, len(bffitlist)):
+    rvraw1.append(bffitlist[i][0][1])
+    rvraw2.append(bffitlist[i][0][4])
+    rvraw1_err.append(bffitlist[i][2][1])
+    rvraw2_err.append(bffitlist[i][2][4])
 
 # CALCULATE ORBITAL PHASES AND FINAL RV CURVE
 phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd, source)
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
+#plt.figure(4)
 windowcols = 4		                        # how many window columns there should be
 windowrows = np.rint(nspec/windowcols)+1	# how many window rows there should be
-xmin = -99
-xmax = 59
+xmin = rvneg
+xmax = rvpos
 ymin = -0.05
 ymax = 0.65
 fig = plt.figure(1, figsize=(15,10))
@@ -180,8 +198,8 @@ for i in range (1,nspec):
 	plt.subplots_adjust(wspace=0, hspace=0)
 	plt.axis([xmin, xmax, ymin, ymax])
 	plt.tick_params(axis='both', which='major', labelsize=14)
-	plt.text(0.45*xmax, 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
-	plt.text(0.25*xmax, 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
+	plt.text(xmax - 0.4*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
+	plt.text(xmax - 0.3*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
 	#if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
 	#elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
 	#elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
