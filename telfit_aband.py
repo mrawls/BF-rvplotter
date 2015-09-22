@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
@@ -23,14 +24,14 @@ The timefile contents don't matter one bit here
 Output: two plots in succession (like BF_python.py), and RV shift info printed to screen
 (manually save the shift info if you want, and then use specshift.py to remove the shift)
 '''
+telfitin = '../../RG_spectra/3955867/infiles_arcesBF_telfit.txt'
+timefile = '../../RG_spectra/3955867/bjdinfile_arcesBF.txt'
+gausspar = '../../RG_spectra/3955867/gausspars_telfit.txt'
+shiftfile = '../../RG_spectra/3955867/shifts_arcesBF_telfit.txt'
 
-#telfitin = '../../../Dropbox/KIC9246715/rvstandards/infiles_telfit.txt'
-#timefile = '../../../Dropbox/KIC9246715/rvstandards/times.txt'
-#gausspar = '../../../Dropbox/KIC9246715/rvstandards/gaussfit_pars_telfit.txt'
-
-telfitin = '../../RG_spectra/7037405/infiles_arcesBF_telfit.txt'
-timefile = '../../RG_spectra/7037405/bjdinfile_arcesBF.txt'
-gausspar = '../../RG_spectra/7037405/gausspars_telfit.txt'
+#telfitin = '../../RG_spectra/7037405/infiles_arcesBF_telfit.txt'
+#timefile = '../../RG_spectra/7037405/bjdinfile_arcesBF.txt'
+#gausspar = '../../RG_spectra/7037405/gausspars_telfit.txt'
 
 # Parameters for the broadening function (don't change w00 or n if you want the A-band!)
 w00 = 7595
@@ -125,6 +126,13 @@ bf_ind = svd.getRVAxis(r, 1)
 
 # fit the smoothed BFs with two gaussians (only one is really used here)
 bffitlist, rvraw1, rvraw1_err, rvraw2, rvraw2_err = bff.gaussparty(gausspar, nspec, filenamelist, bfsmoothlist, bf_ind)
+
+# write results of the first fit gaussian only to an outfile
+outfile = open(shiftfile, 'w')
+for (image, rv, err) in zip(filenamelist[1:], rvraw1[1:], rvraw1_err[1:]):
+    print(image, rv, err, file=outfile)
+outfile.close()
+print('Shifts saved to {0}'.format(shiftfile))
 
 # plot final BFs in individual panels
 windowcols = 4		                        # how many window columns there should be
