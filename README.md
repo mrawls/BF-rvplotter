@@ -37,7 +37,7 @@ This process is written specifically for a set of optical ARCES echelle spectra 
 
 **gausspars_telfit.txt** - a list of guessed shift velocities so the gaussian fitter can find them. Must be the same length as bjdinfile.txt with six columns (it fits two gaussians with three parameters each by default): amp1, shift1, width1, amp2, shift2, width2. Set all shift1 = 0 and shift2 = something far from 0, like 20, so the second gaussian is out of the way since we don't need it here. The first line should just be six zeros since it corresponds to the template.
 
-**shifts_telfit.txt** - a list of observed spectra followed by small velocity shifts that need to be removed. This is the only input needed for `specshift.py`. Calculate the shifts by running `telfit_aband.py` which requires `telluricspec.txt`, `bjdinfile.txt`, `infiles_telfit.txt`, and `gausspars_telfit.txt`, and spits shift velocities out to the screen. Be sure to grab the correct column. Running `specshift.py` will apply the shifts and create new FITS files in the working directory.
+**shifts_telfit.txt** - a list of observed spectra followed by small velocity shifts that need to be removed. This is the only input needed for `specshift.py`, and is automatically created when you run `telfit_aband.py` (requires `telluricspec.txt`, `bjdinfile.txt`, `infiles_telfit.txt`, and `gausspars_telfit.txt`). The shift velocities are also spit out to the screen. Running specshift.py will then apply the shifts and create new FITS files in the working directory.
 
 **infiles_BF.txt** - similar to `infiles_telfit.txt`, but now it's a list of the filenames spat out by `specshift.py`, and the top row must be `templateBF.fits`. No comments or shenanigans in this file. (If you want to skip all the telfit/specshift business because your target spectra are magically on the same RV standard already, this can just be `templateBF.fits` followed by the original spectrum filenames.)
 
@@ -47,7 +47,7 @@ This process is written specifically for a set of optical ARCES echelle spectra 
 
 **telfit_aband.py** - calculate small RV offsets based on telluric A-band model.
 INPUT: `infiles_telfit.txt`, `bjdinfile.txt`, `gausspars_telfit.txt`.
-OUTPUT: shows you some plots, and prints shifts to screen (use this to make `shifts_telfit.txt` yourself).
+OUTPUT: shows you some plots, prints shifts to screen, and also saves shifts in the new `shifts_telfit.txt` file.
 
 **specshift.py** - applies velocity shifts to spectra.
 INPUT: `shifts_telfit.txt`.
