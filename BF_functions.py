@@ -171,7 +171,12 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
     for i in range(1, nspec):
         # check to see if we are fitting a third gaussian, i.e., one near zero
         # don't print out the result of this fit, but do return it for plotting
-        partest = param[i].split()
+        # handle comments in gausspars file without exploding
+        if '#' in param[i]:
+            commentbegin = param[i].find('#')
+            partest = param[i][0:commentbegin].split()
+        else:
+            partest = param[i].split()
         if len(partest) == 6: ngauss = 2
         elif len(partest) == 9: ngauss = 3
         else: print('something is wrong with your gausspars file!')
