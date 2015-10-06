@@ -182,21 +182,35 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
         else: print('something is wrong with your gausspars file!')
         bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                 params=partest, err=error_array,
-                limitedmin=[True,True,True], limitedmax=[True,True,True], 
-                minpars=[0.05,-200,0], maxpars=[0.95,200,20], quiet=True, shh=True)
-        bffitlist.append(bffit)
+                limitedmin=[True,True,False], limitedmax=[True,True,True], 
+                minpars=[0.008,-200,0], maxpars=[0.95,200,10], quiet=True, shh=True)
+        newbffit = [[] for x in xrange(len(bffit))]
+        if None in bffit[2]:
+            newbffit[0] = bffit[0]
+            newbffit[1] = bffit[1]
+            newbffit[2] = [0, 0, 0, 0, 0]
+        else:
+            newbffit = bffit
+        bffitlist.append(newbffit)
         # NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
         # RV1 for observation i is bffitlist[i][0][1] +/- bffitlist[i][2][1].
         # RV2 for observation i is bffitlist[i][0][4] +/- bffitlist[i][2][4].
-        gauss1[i] = [bffit[0][0], bffit[0][2], bffit[0][1], bffit[2][1]] # these are [amp1, width1, rvraw1, rvraw1_err]
-        gauss2[i] = [bffit[0][3], bffit[0][5], bffit[0][4], bffit[2][4]] # these are [amp2, width2, rvraw2, rvraw2_err]
-        if ngauss == 3:
-            gauss3[i] = [bffit[0][6], bffit[0][8], bffit[0][7], bffit[2][7]]
-        elif ngauss == 2:
-            gauss3[i] = [0, 0, 0, 0]
-        else: print('something is wrong with your gausspars file!')
-        print ('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:], 
-            gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss1[i][3], gauss2[i][0], gauss2[i][1], gauss2[i][2], gauss2[i][3]))
+        # (note: need to check if bffit[2] == None before calling bffit[2][1] or bffit[2][4])
+#        gauss1[i] = [bffit[0][0], bffit[0][2], bffit[0][1], bffit[2][1]] # these are [amp1, width1, rvraw1, rvraw1_err]
+#        gauss2[i] = [bffit[0][3], bffit[0][5], bffit[0][4], bffit[2][4]] # these are [amp2, width2, rvraw2, rvraw2_err]
+#        if ngauss == 3:
+#            gauss3[i] = [bffit[0][6], bffit[0][8], bffit[0][7], bffit[2][7]]
+#        elif ngauss == 2:
+#            gauss3[i] = [0, 0, 0, 0]
+#        else: print('something is wrong with your gausspars file!')
+#        print('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:], 
+#            gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss1[i][3], gauss2[i][0], gauss2[i][1], gauss2[i][2], gauss2[i][3]))
+#        if bffit[2] == None:
+#            bffit[2] = [0, 0, 0, 0, 0]
+        print('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:],
+            newbffit[0][0], newbffit[0][2], newbffit[0][1], newbffit[2][1],
+            newbffit[0][3], newbffit[0][5], newbffit[0][4], newbffit[2][4]))
+
     print(' ')
     print('You MUST manually guesstimate the location of each Gaussian\'s peak in %s!' % gausspars)
     print('Until you do, the above values will be WRONG and the plot will look TERRIBLE.')
