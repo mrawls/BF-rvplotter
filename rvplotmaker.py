@@ -22,24 +22,35 @@ doShift = False
 compareRVs = False
 
 # File containing times, phases, and RVs as specified below
-#filename = '../../RG_spectra/7037405/rvoutfile3_arcesBF.txt'
-#filename = '../../RG_spectra/7037405/rvs_all.txt'
-filename = '../../RG_spectra/5786154/rvs_final.txt'
+filename = '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
 
 #sysname = '9246715'
 #sysname = '7037405'
-sysname = '5786154'
+#sysname = '5786154'
+
+# for 8430105
+sysname = '8430105'
+timestart = 1200
+timeend = 2200
+phasemin = 0.5
+phasemax = 1.5
+RVmin = -50
+RVmax = 60
+
+# for 10001167
+#sysname = '10001167'
+#timestart = 1500
+#timeend = 2300
+#phasemin = 0.48
+#phasemax = 1.48
+#RVmin = -149
+#RVmax = -49
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
-timestart = 1200 #1500
-timeend = 2200 #2400
-phasemin = 0.5
-phasemax = 1.5
-RVmin = -69
-RVmax = 49
 
+# usecols=(0,1,3,4,5,6,7) # this is the default, with RVs in 3,4,5,6 not 8,9,10,11
 bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(filename, comments='#', 
     dtype={'names': ('bjd', 'phase', 'rv1', 'rverr1', 'rv2', 'rverr2', 'source'),
     'formats': (np.float64, np.float64, np.float64, np.float64, np.float64, np.float64, '|S15')},
@@ -84,6 +95,8 @@ if compareRVs == True:
     rvjean2mask = np.isfinite(rvjean2)
     rv1 = rvjean1 - rv1 # REDEFINE RV ARRAYS AS DIFFERENCES
     rv2 = rvjean2 - rv2 # REDEFINE RV ARRAYS AS DIFFERENCES
+    RVmin = -5
+    RVmax = 5
 ## OPTIONAL FOR COMPARISON PURPOSES
 ##################################
 
@@ -127,6 +140,7 @@ if compareRVs == True: plt.axhline(y=0, color='k', ls=':')
 
 # Folded RV vs phase
 ax1 = plt.subplot(2,1,2)
+#ax1.set_xlim([0.5, 1.5])
 plt.axis([phasemin, phasemax, RVmin, RVmax])
 ax1.spines['top'].set_visible(False)
 ax1.spines['right'].set_visible(False)

@@ -182,15 +182,25 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
         else: print('something is wrong with your gausspars file!')
         bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                 params=partest, err=error_array,
-                limitedmin=[True,True,False], limitedmax=[True,True,True], 
-                minpars=[0.008,-200,0], maxpars=[0.95,200,10], quiet=True, shh=True)
+                limitedmin=[True,True,True], limitedmax=[True,True,True], 
+                minpars=[0.005,-200,0], maxpars=[0.95,200,9], quiet=True, shh=True)
         newbffit = [[] for x in xrange(len(bffit))]
-        if None in bffit[2]:
-            newbffit[0] = bffit[0]
-            newbffit[1] = bffit[1]
-            newbffit[2] = [0, 0, 0, 0, 0]
-        else:
-            newbffit = bffit
+        # Sometimes bffit[2] is None, or contains None. Set it to zeros instead.
+        try:
+            if not any(bffit[2]): # this will fail if bffit[2] = None
+                newbffit[0] = bffit[0]
+                newbffit[1] = bffit[1]
+                newbffit[2] = [0, 0, 0, 0, 0]
+            else:
+                newbffit = bffit
+        except:
+            print('WARNING - gaussfit is acting up, fit may not have happened, adjust gausspars file:')
+            if not bffit[2]: # this catches the case where bffit[2] = None
+                newbffit[0] = bffit[0]
+                newbffit[1] = bffit[1]
+                newbffit[2] = [0, 0, 0, 0, 0]
+            else:
+                newbffit = bffit
         bffitlist.append(newbffit)
         # NOTE: to get the gaussian fit corresponding to bfsmoothlist[i], use bffitlist[i][1].
         # RV1 for observation i is bffitlist[i][0][1] +/- bffitlist[i][2][1].
@@ -205,8 +215,6 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
 #        else: print('something is wrong with your gausspars file!')
 #        print('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:], 
 #            gauss1[i][0], gauss1[i][1], gauss1[i][2], gauss1[i][3], gauss2[i][0], gauss2[i][1], gauss2[i][2], gauss2[i][3]))
-#        if bffit[2] == None:
-#            bffit[2] = [0, 0, 0, 0, 0]
         print('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:],
             newbffit[0][0], newbffit[0][2], newbffit[0][1], newbffit[2][1],
             newbffit[0][3], newbffit[0][5], newbffit[0][4], newbffit[2][4]))
@@ -237,8 +245,8 @@ def rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvr
         else:
             phase.append((fracP % 1))
             cycle = int(fracP)
-        rv1.append(rvraw1[i] + bcv[i] - rvstd + bcvstd) # DON'T MESS UP THE +/- SIGNS
-        rv2.append(rvraw2[i] + bcv[i] - rvstd + bcvstd)
+        rv1.append(rvraw1[i] + bcv[i] - rvstd - bcvstd) # DON'T MESS UP THE +/- SIGNS
+        rv2.append(rvraw2[i] + bcv[i] - rvstd - bcvstd)
         rv1_err.append(rvraw1_err[i])
         rv2_err.append(rvraw2_err[i])
         print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f %s' % (bjdmid[i], phase[i], bjdfunny[i], 

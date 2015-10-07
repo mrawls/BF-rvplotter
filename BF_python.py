@@ -43,9 +43,8 @@ gausspars:	your best initial guesses for fitting gaussians to the BF peaks
 OUTPUT
 outfile:	a file that will be created with 8 columns: BJD midpoint, orbital phase,
 			Kepler BJD, RV1, RV1 error, RV2, RV2 error, and source (a string)
-+lots of plots
 
-IN THE CODE
+IMMEDIATELY BELOW, IN THE CODE
 You need to specify whether you have APOGEE (near-IR) or "regular" (e.g., ARCES)
 spectra with the 'isAPOGEE' flag. You also need to set the binary's PERIOD and BJD0,
 both in days, and the constant RV and BCV of whatever template you are using.
@@ -54,25 +53,33 @@ both in days, and the constant RV and BCV of whatever template you are using.
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
 # THE OUTPUT FILE WILL BE CREATED FOR YOU
-infiles =   '../../RG_spectra/10001167/infiles_arcesBF.txt'
-bjdinfile = '../../RG_spectra/10001167/bjdinfile_arcesBF.txt'
-gausspars = '../../RG_spectra/10001167/gaussfit_arcesBF.txt'
-outfile =   '../../RG_spectra/10001167/rvoutfile1_arcesBF.txt'
+infiles =   '../../RG_spectra/8430105/infiles_arcesBF.txt'
+bjdinfile = '../../RG_spectra/8430105/bjdinfile_arcesBF.txt'
+gausspars = '../../RG_spectra/8430105/gaussfit_arcesBF.txt'
+outfile =   '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False
-period = 120.390971
-BJD0 = 2454957.586519
-rvstd = 0 			# km/s; constant RV offset of your template (0 if using a model)
-bcvstd = 0 			# km/s; barycentric RV of your template (0 if using a model)
-amp = 7.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+
+# ORBITAL PERIOD AND ZEROPOINT !!!
+period = 63.327106; BJD0 = 2454976.635546 # 8430105
+#period = 120.390971; BJD0 = 2454957.586519 # 10001167
+
+# RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model)
+#rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec.0026)
+rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec.0028)
+#rvstd = -21.123; bcvstd = 12.499 # HD196850 (fullspec.0032)
+#rvstd = 0; bcvstd = 0 # model template
+
+# PARAMETERS FOR THE BROADENING FUNCTION (you can adjust w00, n, and stepV below)
+amp = 8.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
 smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (function of instrument resolution)
-m = 251             # length of the BF (must be longer if RVs are far from 0)
+m = 211             # length of the BF (must be longer if RVs are far from 0)
 #m = 171
 
 # STUFF TO MAKE PLOTS LOOK NICE
-rvneg = -180
-rvpos = 20
+rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
+#rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
@@ -108,18 +115,19 @@ w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
-#plt.figure(1)
+# OPTION TO PLOT THIS (commented out for now)
+##plt.figure(1)
 newspeclist = []
 yoffset = 1
-plt.axis([w1[0], w1[-1], 0, 27])
-plt.xlabel('wavelength')
+#plt.axis([w1[0], w1[-1], 0, 27])
+#plt.xlabel('wavelength')
 for i in range (0, nspec):
 	newspec = np.interp(w1, wavelist[i], speclist[i])
 	newspeclist.append(newspec)
-	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
-	yoffset = yoffset + 1
-#plt.legend()
-plt.show()
+#	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
+#	yoffset = yoffset + 1
+##plt.legend()
+#plt.show()
 
 # BROADENING FUNCTION TIME
 svd = pyasl.SVD()
@@ -140,7 +148,7 @@ for i in range (0, nspec):
 	bflist.append(bf)
 	bfsmoothlist.append(bfsmooth)
 # Obtain the indices in RV space that correspond to the BF
-bf_ind = svd.getRVAxis(r, 1)
+bf_ind = svd.getRVAxis(r, 1) + rvstd - bcvstd
 
 # PLOT THE RESULT OF THE SINGLE VALUE DECOMPOSITION TO SEE IF IT IS TERRIBLE OR NOT
 # NOT READY YET
@@ -148,17 +156,16 @@ bf_ind = svd.getRVAxis(r, 1)
 #plt.plot(m, svd)
 #plt.show()
 
-# PLOT THE SMOOTHED BFs (option)
-# this helps you estimate the location of each peak so you can update gausspars NOW!
-#plt.figure(3)
-plt.axis([rvneg, rvpos, -0.2, 12])
-plt.xlabel('Radial Velocity (km s$^{-1}$)')
-plt.ylabel('Broadening Function (arbitrary amplitude)')
-yoffset = 0.0
-for i in range(1, nspec):
-	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
-	yoffset = yoffset + 0.4
-plt.show()
+# OPTION TO PLOT THE SMOOTHED BFs (commented out for now)
+##plt.figure(3)
+#plt.axis([rvneg, rvpos, -0.2, 12])
+#plt.xlabel('Radial Velocity (km s$^{-1}$)')
+#plt.ylabel('Broadening Function (arbitrary amplitude)')
+#yoffset = 0.0
+#for i in range(1, nspec):
+#	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
+#	yoffset = yoffset + 0.4
+#plt.show()
 
 # FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
 # you have to have pretty decent guesses in the gausspars file for this to work.
@@ -181,8 +188,6 @@ windowcols = 4		                        # how many window columns there should b
 windowrows = np.rint(nspec/windowcols)+1	# how many window rows there should be
 xmin = rvneg
 xmax = rvpos
-ymin = -0.05
-ymax = 0.65
 fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
@@ -198,8 +203,8 @@ for i in range (1,nspec):
 	plt.subplots_adjust(wspace=0, hspace=0)
 	plt.axis([xmin, xmax, ymin, ymax])
 	plt.tick_params(axis='both', which='major', labelsize=14)
-	plt.text(xmax - 0.4*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
-	plt.text(xmax - 0.3*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
+	plt.text(xmax - 0.25*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
+	plt.text(xmax - 0.35*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
 	#if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
 	#elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
 	#elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
