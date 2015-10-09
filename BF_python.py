@@ -53,32 +53,41 @@ both in days, and the constant RV and BCV of whatever template you are using.
 ##########
 # YOU NEED TO HAVE THESE INPUT FILES
 # THE OUTPUT FILE WILL BE CREATED FOR YOU
-infiles =   '../../RG_spectra/8430105/infiles_arcesBF.txt'
-bjdinfile = '../../RG_spectra/8430105/bjdinfile_arcesBF.txt'
-gausspars = '../../RG_spectra/8430105/gaussfit_arcesBF.txt'
-outfile =   '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
+
+#infiles =   '../../RG_spectra/8430105/infiles_arcesBF.txt'
+#bjdinfile = '../../RG_spectra/8430105/bjdinfile_arcesBF.txt'
+#gausspars = '../../RG_spectra/8430105/gaussfit_arcesBF.txt'
+#outfile =   '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
+
+# (the original infiles)
+infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
+bjdinfile = '../../RG_spectra/9246715/bjds_baryvels.txt'
+gausspars = '../../RG_spectra/9246715/gaussfit_pars.txt'
+outfile = '../../RG_spectra/9246715/redo_plot_BFoutput.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
-period = 63.327106; BJD0 = 2454976.635546 # 8430105
+period = 171.277697; BJD0 = 2455170.514777 # 9246715
+#period = 63.327106; BJD0 = 2454976.635546 # 8430105
 #period = 120.390971; BJD0 = 2454957.586519 # 10001167
 
 # RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model)
 #rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec.0026)
-rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec.0028)
+#rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec.0028)
 #rvstd = -21.123; bcvstd = 12.499 # HD196850 (fullspec.0032)
-#rvstd = 0; bcvstd = 0 # model template
+rvstd = 0; bcvstd = 0 # model template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (you can adjust w00, n, and stepV below)
-amp = 8.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+amp = 6.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
 smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (function of instrument resolution)
 m = 211             # length of the BF (must be longer if RVs are far from 0)
 #m = 171
 
 # STUFF TO MAKE PLOTS LOOK NICE
-rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
+rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
+#rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
 #rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
 
 # some previously set values for posterity ...
@@ -104,10 +113,10 @@ if isAPOGEE == True:
 	w00 = 15145
 	n = 15000 #20000 #15000 ... testing apogee?
 else:
-	#w00 = 5400
-	#n = 40000 #38750
-	w00 = 4000
-	n = 90000
+	w00 = 5400          # 9246715 accommodates TRES
+	n = 42500 #38750    # 9246715 accommodates TRES
+	#w00 = 4000
+	#n = 90000
 stepV = 1.5
 w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 
@@ -205,13 +214,15 @@ for i in range (1,nspec):
 	plt.tick_params(axis='both', which='major', labelsize=14)
 	plt.text(xmax - 0.25*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
 	plt.text(xmax - 0.35*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
-	#if source[i] == 'arces': plt.text(0.4*xmax, 0.8*ymax, 'ARCES', color='#0571b0', size=12)
-	#elif source[i] == 'tres': plt.text(0.4*xmax, 0.8*ymax, 'TRES', color = '#008837', size=12)
-	#elif source[i] == 'arces': plt.txt(0.4*xmax, 0.8*ymax, 'APOGEE', color = 'k', size=12)
+	## comment out below if you don't want to print source on plot windows ##
+	if source[i] == 'arces': plt.text(xmin + 0.1*(np.abs(xmax-xmin)), 0.8*ymax, 'ARCES', color='#0571b0', size=12)
+	elif source[i] == 'tres': plt.text(xmin + 0.1*(np.abs(xmax-xmin)), 0.8*ymax, 'TRES', color = '#008837', size=12)
+	elif source[i] == 'arces': plt.txt(xmin + 0.1*(np.abs(xmax-xmin)), 0.8*ymax, 'APOGEE', color = 'k', size=12)
 	#else: plt.text(0.9*xmin, 0.4*ymax, 'SOURCE?', color = 'k', size=12)
-	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, label='Smoothed BF')
-	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=1.5, label='Two-Gaussian fit')
-	plt.axvline(x=0, color='0.75')	
+	## comment out above if you don't want to print source on plot windows ##
+	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, ls='-', label='Smoothed BF')
+	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=2, ls='--', label='Two-Gaussian fit')
+	#plt.axvline(x=0, color='0.75')	
 	if i==23: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
-						frameon=False, prop={'size':20})
+						frameon=False, handlelength=3, prop={'size':20})
 plt.show()
