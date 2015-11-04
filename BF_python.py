@@ -54,41 +54,52 @@ both in days, and the constant RV and BCV of whatever template you are using.
 # YOU NEED TO HAVE THESE INPUT FILES
 # THE OUTPUT FILE WILL BE CREATED FOR YOU
 
-#infiles =   '../../RG_spectra/8430105/infiles_arcesBF.txt'
-#bjdinfile = '../../RG_spectra/8430105/bjdinfile_arcesBF.txt'
-#gausspars = '../../RG_spectra/8430105/gaussfit_arcesBF.txt'
-#outfile =   '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
+#infiles =   '../../RG_spectra/4663623/infiles_arcesBF.txt'
+#bjdinfile = '../../RG_spectra/4663623/bjdinfile_arcesBF.txt'
+#gausspars = '../../RG_spectra/4663623/gaussfit_arcesBF.txt'
+#outfile =   '../../RG_spectra/4663623/rvoutfile1_arcesBF.txt'
+infiles = '../../KIC_8848288/infiles.txt'
+bjdinfile = '../../KIC_8848288/bjdfile.txt'
+gausspars = '../../KIC_8848288/gaussfit.txt'
+outfile = '../../KIC_8848288/rvs2_BF.txt'
 
 # (the original infiles)
-infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
-bjdinfile = '../../RG_spectra/9246715/bjds_baryvels.txt'
-gausspars = '../../RG_spectra/9246715/gaussfit_pars.txt'
-outfile = '../../RG_spectra/9246715/redo_plot_BFoutput.txt'
+#infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
+#bjdinfile = '../../RG_spectra/9246715/bjds_baryvels.txt'
+#gausspars = '../../RG_spectra/9246715/gaussfit_pars.txt'
+#outfile = '../../RG_spectra/9246715/redo_plot_BFoutput.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
-period = 171.277697; BJD0 = 2455170.514777 # 9246715
+#period = 171.277697; BJD0 = 2455170.514777 # 9246715
 #period = 63.327106; BJD0 = 2454976.635546 # 8430105
 #period = 120.390971; BJD0 = 2454957.586519 # 10001167
+#period = 358.08; BJD0 = 2454962.684595 # 4663623
+period = 5.56648; BJD0 = 2454904.8038
 
-# RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model)
-#rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec.0026)
-#rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec.0028)
-#rvstd = -21.123; bcvstd = 12.499 # HD196850 (fullspec.0032)
-rvstd = 0; bcvstd = 0 # model template
+# RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model !!!)
+#rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec26), G1 V star
+rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec28), G9 V star
+#rvstd = -21.123; bcvstd = 12.499 # HD196850 (fullspec32), G1 V star
+#rvstd = 0; bcvstd = 0 # model template
 
-# PARAMETERS FOR THE BROADENING FUNCTION (you can adjust w00, n, and stepV below)
-amp = 6.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
-smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (function of instrument resolution)
-m = 211             # length of the BF (must be longer if RVs are far from 0)
-#m = 171
+# PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
+amp = 2.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
+w00 = 4408          # starting wavelength for new grid
+n = 42000           # number of wavelength points for new grid
+stepV = 2.0 #1.5    # roughly 3e5 / (max_wavelength / wavelength_step) km/s, rounded down
+m = 121 #171        # length of the BF (must be longer if RVs are far from 0)
+# good values for APOGEE: w00 = 15145, n = 15000
 
 # STUFF TO MAKE PLOTS LOOK NICE
-rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
+#rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
 #rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
+#rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 4663623
+rvneg = -60; rvpos = 20; ymin = -0.1; ymax = 1.0
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
@@ -105,19 +116,9 @@ print('You have set Porb = {0} days, BJD0 = {1}'.format(period, BJD0))
 print(' ')
 
 # CREATE NEW SPECTRUM IN LOG SPACE
-# The wavelengths are w1.
+# This uses w00, n, and stepV, defined above. The new wavelength grid is w1.
 # The BF will be evenly spaced in velocity with length m.
 # The velocity steps are r (km/s/pix).
-# Guidelines for choosing w00, n, stepV, and m are in the functions file.
-if isAPOGEE == True:
-	w00 = 15145
-	n = 15000 #20000 #15000 ... testing apogee?
-else:
-	w00 = 5400          # 9246715 accommodates TRES
-	n = 42500 #38750    # 9246715 accommodates TRES
-	#w00 = 4000
-	#n = 90000
-stepV = 1.5
 w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 
 # READ IN ALL THE THINGS
@@ -128,25 +129,26 @@ nspec, filenamelist, datetimelist, wavelist, speclist, source = bff.read_specfil
 ##plt.figure(1)
 newspeclist = []
 yoffset = 1
-#plt.axis([w1[0], w1[-1], 0, 27])
-#plt.xlabel('wavelength')
+plt.axis([w1[0], w1[-1], 0, 27])
+plt.xlabel('wavelength')
 for i in range (0, nspec):
 	newspec = np.interp(w1, wavelist[i], speclist[i])
 	newspeclist.append(newspec)
-#	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
-#	yoffset = yoffset + 1
+	plt.plot(w1, newspeclist[i]+yoffset, label=datetimelist[i].iso[0:10])
+	yoffset = yoffset + 1
 ##plt.legend()
-#plt.show()
+plt.show()
 
 # BROADENING FUNCTION TIME
 svd = pyasl.SVD()
 # Single Value Decomposition
 svd.decompose(newspeclist[0], m)
+singularvals = svd.getSingularValues()
 bflist = []
 bfsmoothlist = []
 for i in range (0, nspec):
 	# Obtain the broadening function
-	bf = svd.getBroadeningFunction(newspeclist[i]) # this one is like a matrix
+	bf = svd.getBroadeningFunction(newspeclist[i]) # this is a full matrix
 	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
 	# Smooth the array-like broadening function
 	bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
@@ -159,10 +161,15 @@ for i in range (0, nspec):
 # Obtain the indices in RV space that correspond to the BF
 bf_ind = svd.getRVAxis(r, 1) + rvstd - bcvstd
 
-# PLOT THE RESULT OF THE SINGLE VALUE DECOMPOSITION TO SEE IF IT IS TERRIBLE OR NOT
-# NOT READY YET
-#plt.figure(2)
-#plt.plot(m, svd)
+# OPTION TO PLOT THE SINGULAR VALUES TO SEE WHERE THEY AREN'T A MESS
+# this probably isn't important, because instead of choosing which values to throw out,
+# we use "Route #2" as described by Rucinski and just use the final row of the BF array
+# and smooth it with a Gaussian to get rid of noise problems.
+# for more info, seriously, read http://www.astro.utoronto.ca/~rucinski/SVDcookbook.html
+##plt.figure(2)
+#plt.semilogy(singularvals, 'b-')
+#plt.xlabel('BF Index')
+#plt.ylabel('Singular Values')
 #plt.show()
 
 # OPTION TO PLOT THE SMOOTHED BFs (commented out for now)
@@ -194,7 +201,7 @@ phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile
 # manually adjust this multi-panel plot based on how many spectra you have
 #plt.figure(4)
 windowcols = 4		                        # how many window columns there should be
-windowrows = np.rint(nspec/windowcols)+1	# how many window rows there should be
+windowrows = int([np.rint(nspec/windowcols) if (np.float(nspec)/windowcols)%windowcols == 0 else np.rint(nspec/windowcols)+1][0])
 xmin = rvneg
 xmax = rvpos
 fig = plt.figure(1, figsize=(15,10))
