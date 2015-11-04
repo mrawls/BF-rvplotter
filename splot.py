@@ -5,11 +5,14 @@ from astropy.io import fits
 #from astropy.io.fits import getdata
 #from astropy.io.fits import getheader
 from BF_functions import read_specfiles
+import sys
 '''
-Simple python script for plotting spectra from FITS files
+Simple python script for plotting spectra from FITS or text files, or both
 Meredith Rawls, originally written May 2014
 
-To run: python splot.py infiles.txt
+Make infiles.txt and a corresponding bjdfile.txt first!!
+
+Then, to run: python ~/Astronomy/github/BF-rvplotter/splot.py infiles.txt bjdfile.txt
 '''
 
 # CHANGE AXIS RANGE AS DESIRED
@@ -17,28 +20,18 @@ To run: python splot.py infiles.txt
 #plt.axis([6100, 6300, -0.5, 25])
 #plt.axis([5000, 8000, -0.5, 10])
 
-import sys
+# SPECIFY INFILES CORRECTLY
 infiles = sys.argv[1]
+bjdfile = sys.argv[2]
 #bjdfile = '../../FDBinary/9246715/bjds_baryvels.txt'
-bjdfile = '../../RG_spectra/7037405/bjdinfile_arces.txt'
+#bjdfile = '../../RG_spectra/7037405/bjdinfile_arces.txt'
 	# note: bcvin is never really used here, but you have to give it some file
 	# with the correct length because of how read_specfiles is set up
-#linelist = '../../MOOG/ares_v1.0/yong_fe2_jeanversion.txt'
-#refspec = '../../../Dropbox/KIC9246715/phoenix_air_jean.txt'
-#refspec = '../../RG_spectra/APOGEE/model_rg_apogee.txt' OPTION to plot this too, see end
 isAPOGEE = False # read_specfiles will check to see if apogee is actually true
-#if 'apogee' in infiles:
-#	isAPOGEE = True
-#	print('Setting isAPOGEE to True')
-#else:
-#	isAPOGEE = False
 
-# Option: draw vertical lines for comparison of feature location by eye
-# (the vertical lines will be every 2 Angstroms between xstart and xend)
-#xstart = 7610
-#xend = 7680
-#for i in range(xstart,xend):
-#	plt.axvline(x=i, ymin=-1, ymax=10, color='0.75')
+# OPTIONAL THINGS
+#linelist = '../../MOOG/ares_v1.0/yong_fe2_jeanversion.txt'
+#refspec = '../../RG_spectra/APOGEE/model_rg_apogee.txt'
 
 plt.xlabel("Wavelength")
 plt.ylabel("Arbitrary Flux")
@@ -80,14 +73,21 @@ for i, (wave, spec, datetime) in enumerate(zip(wavelist, speclist, datetimelist)
 	plt.plot(wave, spec + 2*i, color='b', marker='.', mfc='k')#
 	i = i + yoffset
 
-# OPTION: plot text file reference spectrum here
+# OPTION: Plot text file reference spectrum too?
 #waveref, fluxref = np.loadtxt(refspec, usecols=(0,1), unpack=True)
 #fluxref = fluxref + 2*i #apply yoffset
 #plt.plot(waveref, fluxref, color='r', marker='.', mfc='k')
 
-# Plot random vertical lines here
+## OPTION: Plot vertical lines corresponding to linelist items too?
 #xvals = np.loadtxt(linelist, comments='#', usecols=(0,), unpack=True)
 #for xval in xvals:
 #	plt.axvline(x=xval, color='0.75')
+
+# OPTION: Plot generic vertical lines too?
+# (the vertical lines will be every 2 Angstroms between xstart and xend)
+#xstart = 7610
+#xend = 7680
+#for i in range(xstart,xend):
+#	plt.axvline(x=i, ymin=-1, ymax=10, color='0.75')
 
 plt.show()
