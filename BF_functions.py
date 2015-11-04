@@ -183,7 +183,7 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
         bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                 params=partest, err=error_array,
                 limitedmin=[True,True,True], limitedmax=[True,True,True], 
-                minpars=[0.005,-200,0], maxpars=[0.95,200,9], quiet=True, shh=True)
+                minpars=[0.1,-200,0], maxpars=[1.2,200,10], quiet=True, shh=True)
         newbffit = [[] for x in xrange(len(bffit))]
         # Sometimes bffit[2] is None, or contains None. Set it to zeros instead.
         try:
