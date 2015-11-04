@@ -22,20 +22,30 @@ doShift = False
 compareRVs = False
 
 # File containing times, phases, and RVs as specified below
-filename = '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
+#filename = '../../RG_spectra/8430105/rvoutfile2_arcesBF.txt'
+filename = '../../KIC_8848288/rvs_BF.txt'
+
+# for 8848288 (not one of our RG/EBs)
+sysname = '8848288'
+timestart = 1310
+timeend = 1350
+phasemin = 0.45
+phasemax = 1.45
+RVmin = -24
+RVmax = -13
 
 #sysname = '9246715'
 #sysname = '7037405'
 #sysname = '5786154'
 
 # for 8430105
-sysname = '8430105'
-timestart = 1200
-timeend = 2200
-phasemin = 0.5
-phasemax = 1.5
-RVmin = -50
-RVmax = 60
+#sysname = '8430105'
+#timestart = 1200
+#timeend = 2200
+#phasemin = 0.5
+#phasemax = 1.5
+#RVmin = -50
+#RVmax = 60
 
 # for 10001167
 #sysname = '10001167'
@@ -131,6 +141,9 @@ for idx, label in enumerate(source):
     elif label == 'apogee':
         plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ks', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
         plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ks', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)                
+    else:
+        plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ko', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
+        plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ko', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
 ##plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=10, lw=1.5)
 ##plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=10, lw=1.5)
 plt.xlabel("Time (BJD -- 2454833)", size=24, labelpad=10)
@@ -164,6 +177,11 @@ for idx, label in enumerate(source):
         plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)#, label='Star 2' if idx==16 else '')        
         plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='s', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
         plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
+    else:
+        plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+        plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
+        plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+        plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
 plt.xlabel("Orbital Phase", size=24)
 
 # Draw vertical lines at phase = 0.5
@@ -174,7 +192,7 @@ plt.xlabel("Orbital Phase", size=24)
 if compareRVs == True: plt.axhline(y=0, color='k', ls=':')
 
 # Create the legend and y-axis label
-plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
+#plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
 fig.text(0.07, 0.5, 'Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=24, rotation='vertical')
 fig.text(0.14, 0.115, 'Folded', size=24)
 fig.text(0.14, 0.55, 'Unfolded', size=24)
