@@ -146,7 +146,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
     f1.close()
     return nspec, filenamelist, datetimelist, wavelist, speclist, source
 
-def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
+def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=10):
     '''
     Fits 2 or 3 gaussians to some data
     '''
@@ -179,11 +179,21 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind):
             partest = param[i].split()
         if len(partest) == 6: ngauss = 2
         elif len(partest) == 9: ngauss = 3
-        else: print('something is wrong with your gausspars file!')
-        bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
-                params=partest, err=error_array,
-                limitedmin=[True,True,True], limitedmax=[True,True,True], 
-                minpars=[0.1,-200,0], maxpars=[1.2,200,10], quiet=True, shh=True)
+        else: print('something is wrong with your gausspars file!')       
+        if ngauss == 2:
+            bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
+                    params=partest, err=error_array,
+                    limitedmin=[True,True,True], limitedmax=[True,True,True], 
+                    minpars=[0.005,float(partest[1])-threshold,0, 0.005,float(partest[4])-threshold,0],
+                    maxpars=[1.2,float(partest[1])+threshold,15, 1.2,float(partest[4])+threshold,15],
+                    quiet=True, shh=True)
+        elif ngauss == 3:
+            bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
+                    params=partest, err=error_array,
+                    limitedmin=[True,True,True], limitedmax=[True,True,True], 
+                    minpars=[0.005,float(partest[1])-threshold,0, 0.005,float(partest[4])-threshold,0, 0.005,-5,0],
+                    maxpars=[1.2,float(partest[1])+threshold,15, 1.2,float(partest[4])+threshold,15, 1.2,5,15],
+                    quiet=True, shh=True)
         newbffit = [[] for x in xrange(len(bffit))]
         # Sometimes bffit[2] is None, or contains None. Set it to zeros instead.
         try:
