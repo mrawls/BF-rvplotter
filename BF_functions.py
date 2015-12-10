@@ -180,20 +180,20 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
         if len(partest) == 6: ngauss = 2
         elif len(partest) == 9: ngauss = 3
         else: print('something is wrong with your gausspars file!')       
+        minpars=[0.005, float(partest[1])-threshold, 0,  0.005, float(partest[4])-threshold, 0]
+        maxpars=[1.2,   float(partest[1])+threshold, 15, 1.2,   float(partest[4])+threshold, 15]
         if ngauss == 2:
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
-                    minpars=[0.005,float(partest[1])-threshold,0, 0.005,float(partest[4])-threshold,0],
-                    maxpars=[1.2,float(partest[1])+threshold,15, 1.2,float(partest[4])+threshold,15],
-                    quiet=True, shh=True)
+                    minpars=minpars, maxpars=maxpars, quiet=True, shh=True)
         elif ngauss == 3:
+            minpars.extend([0.005, float(partest[7])-threshold, 0])
+            maxpars.extend([1.2,   float(partest[7])+threshold, 15])
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
-                    minpars=[0.005,float(partest[1])-threshold,0, 0.005,float(partest[4])-threshold,0, 0.005,-5,0],
-                    maxpars=[1.2,float(partest[1])+threshold,15, 1.2,float(partest[4])+threshold,15, 1.2,5,15],
-                    quiet=True, shh=True)
+                    minpars=minpars, maxpars=maxpars, quiet=True, shh=True)
         newbffit = [[] for x in xrange(len(bffit))]
         # Sometimes bffit[2] is None, or contains None. Set it to zeros instead.
         try:

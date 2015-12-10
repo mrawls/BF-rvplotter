@@ -55,10 +55,10 @@ both in days, and the constant RV and BCV of whatever template you are using.
 # THE OUTPUT FILE WILL BE CREATED FOR YOU
 
 # typical format for RG/EB systems
-infiles =   '../../RG_spectra/9970396/infiles_arcesBF.txt'
-bjdinfile = '../../RG_spectra/9970396/bjdinfile_arcesBF.txt'
-gausspars = '../../RG_spectra/9970396/gaussfit_arcesBF.txt'
-outfile =   '../../RG_spectra/9970396/rvoutfile1_arcesBF.txt'
+infiles =   '../../RG_spectra/7037405_1/infiles_arcesBF_updated.txt'
+bjdinfile = '../../RG_spectra/7037405_1/bjdinfile_arcesBF_updated.txt'
+gausspars = '../../RG_spectra/7037405_1/gaussfit_arcesBF_updated.txt'
+outfile =   '../../RG_spectra/7037405_1/rvoutfile1_arcesBF_updated.txt'
 
 # (for KIC 8848288)
 #infiles = '../../KIC_8848288/infiles.txt'
@@ -75,10 +75,11 @@ outfile =   '../../RG_spectra/9970396/rvoutfile1_arcesBF.txt'
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False        # toggle to use near-IR stuff, or not
 SpecPlot = False        # toggle to plot spectra before BFs, or not
-threshold = 10          # margin in km/s for fitting each gaussian's position
+threshold = 7          # margin in km/s for fitting each gaussian's position
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
 #period = 171.277697; BJD0 = 2455170.514777 # 9246715
+period = 207.11; BJD0 = 54905.625221 # 7037405
 #period = 63.327106; BJD0 = 2454976.635546 # 8430105
 #period = 120.390971; BJD0 = 2454957.586519 # 10001167
 #period = 358.08; BJD0 = 2454962.684595 # 4663623
@@ -86,7 +87,7 @@ threshold = 10          # margin in km/s for fitting each gaussian's position
 #period = 20.686011; BJD0 = 54967.249343 # 9291629
 #period = 19.384383; BJD0 = 54970.214339 # 8702921
 #period = 33.659962; BJD0 = 54960.866328 # 3955867
-period = 235.30; BJD0 = 55190.482944 #9970396
+#period = 235.30; BJD0 = 55190.482944 #9970396
 
 # RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model !!!)
 #rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec26), G1 V star
@@ -107,6 +108,7 @@ m = 171             # length of the BF (must be longer if RVs are far from 0)
 
 # STUFF TO MAKE PLOTS LOOK NICE
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
+rvneg = -89; rvpos = 39; ymin = -0.05; ymax = 0.30 # 7037405
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
 #rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 4663623
@@ -114,7 +116,7 @@ m = 171             # length of the BF (must be longer if RVs are far from 0)
 #rvneg = -109; rvpos = 79; ymin = -0.05; ymax = 0.45 # 9291629
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.15 # 8702921
 #rvneg = -99; rvpos = 99; ymin = -0.05; ymax = 0.30 # 3955867
-rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
+#rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
