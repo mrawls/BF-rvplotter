@@ -22,34 +22,34 @@ doShift = False
 compareRVs = False
 
 # File containing times, phases, and RVs as specified below
-#filename = '../../RG_spectra/9970396/rvoutfile1_arcesBF.txt'
-#filename = '../../RG_spectra/7037405_1/rvoutfile1_arcesBF_updated.txt'
-filename = '../../RG_spectra/jean_RVs/rvs_jean_3955867.txt' #'../../RG_spectra/rvs_final_3955867.txt'
+#filename = '../../RG_spectra/8054233/rvoutfile1_arcesBF.txt'
+filename = '../../RG_spectra/8702921/rvoutfile2_arcesBF.txt'
+#filename = '../../RG_spectra/rvs_final_10001167.txt'
 #filename = '../../KIC_8848288/rvs_BF.txt'
 
 #sysname = '9970396'
 #timestart = 1550
-#timeend = 2200
+#timeend = 2500
 #phasemin = 0.4
 #phasemax = 1.4
 #RVmin = -59
 #RVmax = 19
 
-sysname = '3955867'
-timestart = 1650
-timeend = 2350
-phasemin = 0.4
-phasemax = 1.4
-RVmin = -49
-RVmax = 69
+#sysname = '3955867'
+#timestart = 1650
+#timeend = 2350
+#phasemin = 0.4
+#phasemax = 1.4
+#RVmin = -49
+#RVmax = 69
 
-#sysname = '8702921'
-#timestart = 1200
-#timeend = 2200
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -59
-#RVmax = 39
+sysname = '8702921'
+timestart = 1200
+timeend = 2200
+phasemin = 0.5
+phasemax = 1.5
+RVmin = -29
+RVmax = 9
 
 #sysname = '9291629'
 #timestart = 1650
@@ -93,21 +93,29 @@ RVmax = 69
 #sysname = '7037405'
 #timestart = 1550
 #timeend = 2550
-#phasemin = 0.45
-#phasemax = 1.45
+#phasemin = 0.4
+#phasemax = 1.4
 #RVmin = -79
 #RVmax = -1
 
+# for 8054233
+#sysname = '8054233'
+#timestart = 1600
+#timeend = 2200
+#phasemin = 0.5
+#phasemax = 1.5
+#RVmin = -35
+#RVmax = 20
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
 
-# usecols=(0,1,3,4,5,6,7) # this is the default, with RVs in 3,4,5,6 not 8,9,10,11
+# usecols=(0,1,3,4,5,6,7) # this is the default, with RVs in 3,4,5,6 not 8,9,10,11 (7=source!)
 bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(filename, comments='#', 
     dtype={'names': ('bjd', 'phase', 'rv1', 'rverr1', 'rv2', 'rverr2', 'source'),
     'formats': (np.float64, np.float64, np.float64, np.float64, np.float64, np.float64, '|S15')},
-    usecols=(0,1,3,4,5,6,7), unpack=True)
+    usecols=(0,1, 3,4,5,6, 7), unpack=True)
 
 if doShift == True:
     # apply a shift to each RV before plotting it
@@ -235,7 +243,7 @@ plt.xlabel("Orbital Phase", size=24)
 if compareRVs == True: plt.axhline(y=0, color='k', ls=':')
 
 # Create the legend and y-axis label
-#plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
+plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
 fig.text(0.07, 0.5, 'Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=24, rotation='vertical')
 fig.text(0.14, 0.115, 'Folded', size=24)
 fig.text(0.14, 0.55, 'Unfolded', size=24)

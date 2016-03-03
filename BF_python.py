@@ -55,10 +55,10 @@ both in days, and the constant RV and BCV of whatever template you are using.
 # THE OUTPUT FILE WILL BE CREATED FOR YOU
 
 # typical format for RG/EB systems
-infiles =   '../../RG_spectra/7037405_1/infiles_arcesBF_updated.txt'
-bjdinfile = '../../RG_spectra/7037405_1/bjdinfile_arcesBF_updated.txt'
-gausspars = '../../RG_spectra/7037405_1/gaussfit_arcesBF_updated.txt'
-outfile =   '../../RG_spectra/7037405_1/rvoutfile1_arcesBF_updated.txt'
+infiles =   '../../RG_spectra/10001167/infiles_arcesBF.txt'
+bjdinfile = '../../RG_spectra/10001167/bjdinfile_arcesBF.txt'
+gausspars = '../../RG_spectra/10001167/gaussfit_arcesBF.txt'
+outfile =   '../../RG_spectra/10001167/rvoutfile_new_arcesBF.txt'
 
 # (for KIC 8848288)
 #infiles = '../../KIC_8848288/infiles.txt'
@@ -75,19 +75,21 @@ outfile =   '../../RG_spectra/7037405_1/rvoutfile1_arcesBF_updated.txt'
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False        # toggle to use near-IR stuff, or not
 SpecPlot = False        # toggle to plot spectra before BFs, or not
-threshold = 7          # margin in km/s for fitting each gaussian's position
+threshold = 10          # margin in km/s for fitting each gaussian's position
+nudge = 0.02            # BF y-axis value to nudge the floor upward by (default = 0)
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
 #period = 171.277697; BJD0 = 2455170.514777 # 9246715
-period = 207.11; BJD0 = 54905.625221 # 7037405
+#period = 207.11; BJD0 = 54905.625221 # 7037405
 #period = 63.327106; BJD0 = 2454976.635546 # 8430105
-#period = 120.390971; BJD0 = 2454957.586519 # 10001167
+period = 120.390971; BJD0 = 2454957.586519 # 10001167
 #period = 358.08; BJD0 = 2454962.684595 # 4663623
 #period = 5.56648; BJD0 = 2454904.8038 # (8848288)
 #period = 20.686011; BJD0 = 54967.249343 # 9291629
 #period = 19.384383; BJD0 = 54970.214339 # 8702921
 #period = 33.659962; BJD0 = 54960.866328 # 3955867
 #period = 235.30; BJD0 = 55190.482944 #9970396
+#period = 1058.23; BJD0 = 54751.806288 #8054233
 
 # RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model !!!)
 #rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec26), G1 V star
@@ -96,27 +98,28 @@ period = 207.11; BJD0 = 54905.625221 # 7037405
 rvstd = 0; bcvstd = 0 # model template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
-amp = 6.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
-smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
-w00 = 4400 #5400          # starting wavelength for new grid
-n = 85000 #38750          # number of wavelength points for new grid
+amp = 8.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+smoothstd = 1.0 #1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
+w00 = 5400          # starting wavelength for new grid
+n = 38750           # number of wavelength points for new grid
 stepV = 1.7         # roughly 3e5 / (max_wavelength / wavelength_step) km/s, rounded down
-m = 171             # length of the BF (must be longer if RVs are far from 0)
+m = 211 #171             # length of the BF (must be longer if RVs are far from 0)
 # good values for APOGEE: w00 = 15145, n = 15000, stepV = 1.5
 # good values for ARCES & TRES together: w00 = 5400, n = 38750, stepV = 1.7
 # good values for 8848288 (HET low & high res): w00 = 4408, n = 42000, stepV = 2.0
 
 # STUFF TO MAKE PLOTS LOOK NICE
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
-rvneg = -89; rvpos = 39; ymin = -0.05; ymax = 0.30 # 7037405
+#rvneg = -89; rvpos = 39; ymin = -0.05; ymax = 0.30 # 7037405
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
-#rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
+rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 4663623
-#rvneg = -60; rvpos = 20; ymin = -0.1; ymax = 1.0 # (8848288)
+#rvneg = -40; rvpos = 20; ymin = -0.4; ymax = 1.2 # (8848288)
 #rvneg = -109; rvpos = 79; ymin = -0.05; ymax = 0.45 # 9291629
-#rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.15 # 8702921
+#rvneg = -95; rvpos = 130; ymin = -0.05; ymax = 0.20 # 8702921
 #rvneg = -99; rvpos = 99; ymin = -0.05; ymax = 0.30 # 3955867
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
+#rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
@@ -176,6 +179,8 @@ for i in range (0, nspec):
 	for j in range(0,len(bfsmooth)):
 		if np.isnan(bfsmooth[j]) == True:
 			bfsmooth[j] = 0
+		else:
+		    bfsmooth[j] = bfsmooth[j] + nudge
 	bflist.append(bf)
 	bfsmoothlist.append(bfsmooth)
 # Obtain the indices in RV space that correspond to the BF
@@ -222,7 +227,7 @@ phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile
 #plt.figure(4)
 windowcols = 4		                        # how many window columns there should be
 #windowrows = 6
-windowrows = int([np.rint(nspec/windowcols) if (np.float(nspec)/windowcols)%windowcols == 0 else np.rint(nspec/windowcols)+1][0])
+windowrows = int([np.rint((nspec-1)/windowcols) if (np.float(nspec-1)/windowcols)%windowcols == 0 else np.rint((nspec-1)/windowcols)+1][0])
 xmin = rvneg
 xmax = rvpos
 fig = plt.figure(1, figsize=(15,10))

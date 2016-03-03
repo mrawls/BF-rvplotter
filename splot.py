@@ -23,6 +23,7 @@ Then, to run: python ~/Astronomy/github/BF-rvplotter/splot.py infiles.txt bjdfil
 # SPECIFY INFILES CORRECTLY
 infiles = sys.argv[1]
 bjdfile = sys.argv[2]
+
 #bjdfile = '../../FDBinary/9246715/bjds_baryvels.txt'
 #bjdfile = '../../RG_spectra/7037405/bjdinfile_arces.txt'
 	# note: bcvin is never really used here, but you have to give it some file
