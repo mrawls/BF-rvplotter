@@ -27,10 +27,10 @@ dir = '../../RG_ELCmodeling/'
 #trialresultfile = 'trial2_921kmodels_results.txt'
 
 #KIC = '9970396'; SB1 = False
-#trialresultfile = 'trial4_500kmodels_results.txt' # NOT FINAL ANSWER YET
+#trialresultfile = 'trial7v2_447kmodels_results.txt' # NOT FINAL ANSWER YET
 
 KIC = '9291629'; SB1 = False
-trialresultfile = 'trials2_3_results.txt' # NOT FINAL ANSWER YET
+trialresultfile = 'trial5v3_415kmodels_results.txt'
 
 if SB1 == False:
     MSinfile = dir + KIC + '/rvs_KIC_9291629_MS.txt'
@@ -44,7 +44,7 @@ ELCresults = dir + KIC + '/' + trialresultfile
 
 def phasecalc(times, period=100, BJD0=2454833):
 	'''
-	Function to calculate orbitsl phase for a list of times given period and zeropoint
+	Function to calculate orbital phase for a list of times given period and zeropoint
 	'''
 	phases = []
 	#cycles = []
@@ -84,7 +84,7 @@ for row in ELCoutdata:
     row = row.split()
     if row[0] == 'period':
         period = float(row[2])
-    if row[0] == 't0v2':
+    if row[0] == 'tconj':
         t0 = float(row[2])
 
 print('KIC ' + KIC +':', period, t0) # this zeropoint is in units of Kepler BJD!
