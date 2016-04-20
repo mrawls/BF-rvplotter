@@ -21,57 +21,65 @@ Has two flag options
 doShift = False
 compareRVs = False
 
-# File containing times, phases, and RVs as specified below
-#filename = '../../RG_spectra/8054233/rvoutfile1_arcesBF.txt'
-filename = '../../RG_spectra/8702921/rvoutfile2_arcesBF.txt'
-#filename = '../../RG_spectra/rvs_final_10001167.txt'
-#filename = '../../KIC_8848288/rvs_BF.txt'
+### Input EB parameters and RV filenames ###
 
-#sysname = '9970396'
-#timestart = 1550
-#timeend = 2500
-#phasemin = 0.4
-#phasemax = 1.4
-#RVmin = -59
-#RVmax = 19
+sysname = '9970396'
+filename = '../../RG_spectra/9970396/rvs_patrick.txt'
+timestart = 1550
+timeend = 2500
+phasemin = 0.48
+phasemax = 1.48
+RVmin = -59
+RVmax = 19
 
 #sysname = '3955867'
+#filename = '../../RG_spectra/3955867/rvs_final.txt'
 #timestart = 1650
 #timeend = 2350
-#phasemin = 0.4
-#phasemax = 1.4
+#phasemin = 0.5
+#phasemax = 1.5
 #RVmin = -49
 #RVmax = 69
 
-sysname = '8702921'
-timestart = 1200
-timeend = 2200
-phasemin = 0.5
-phasemax = 1.5
-RVmin = -29
-RVmax = 9
+#sysname = '8702921'
+#filename = '../../RG_spectra/8702921/rvs_final.txt'
+#timestart = 1200
+#timeend = 2200
+#phasemin = 0.5
+#phasemax = 1.5
+#RVmin = -29
+#RVmax = 9
 
 #sysname = '9291629'
+#filename = '../../RG_spectra/9291629/rvs_final.txt'
 #timestart = 1650
 #timeend = 2350
-#phasemin = 0.4
-#phasemax = 1.4
+#phasemin = 0.5
+#phasemax = 1.5
 #RVmin = -99
 #RVmax = 34
 
 # for 8848288 (not one of our RG/EBs)
+#filename = '../../KIC_8848288/rvs_BF.txt'
 #sysname = '8848288'
 #timestart = 1310
 #timeend = 1350
-#phasemin = 0.45
-#phasemax = 1.45
+#phasemin = 0.5
+#phasemax = 1.5
 #RVmin = -24
 #RVmax = -13
 
 #sysname = '9246715'
-#sysname = '5786154'
 
-# for 8430105
+#sysname = '5786154'
+#filename = '../../RG_spectra/5786154_1/rvs_patrick.txt'
+#timestart = 1200
+#timeend = 2200
+#phasemin = 0.5
+#phasemax = 1.5
+#RVmin = -55
+#RVmax = 39
+
 #sysname = '8430105'
 #timestart = 1200
 #timeend = 2200
@@ -80,25 +88,24 @@ RVmax = 9
 #RVmin = -50
 #RVmax = 60
 
-# for 10001167
 #sysname = '10001167'
+#filename = '../../RG_spectra/10001167/rvs_jean.txt'
 #timestart = 1500
 #timeend = 2300
-#phasemin = 0.48
-#phasemax = 1.48
+#phasemin = 0.49
+#phasemax = 1.49
 #RVmin = -149
-#RVmax = -49
+#RVmax = -61
 
-# for 7037405
 #sysname = '7037405'
+#filename = '../../RG_spectra/7037405_1/rvs_final.txt'
 #timestart = 1550
 #timeend = 2550
-#phasemin = 0.4
-#phasemax = 1.4
+#phasemin = 0.5
+#phasemax = 1.5
 #RVmin = -79
 #RVmax = -1
 
-# for 8054233
 #sysname = '8054233'
 #timestart = 1600
 #timeend = 2200

@@ -20,7 +20,8 @@ for i in range(1,len(filenamelist)):
 ## Shift the spectra by rv1 amount... using iraf dopcor ##
 '''
 
-shiftfile = '../../RG_spectra/10001167/shifts_arcesBF_telfit.txt'
+#shiftfile = '../../RG_spectra/10001167/shifts_arcesBF_telfit.txt'
+shiftfile = '../../RG_spectra/8702921/shifts_zeroRV.txt'
 
 infiles, velshiftlist = np.loadtxt(shiftfile, dtype={'names': ('infiles', 'velshiftlist'),
 	'formats': ('|S77', np.float64)}, usecols=(0,1), unpack=True)
@@ -58,7 +59,7 @@ for infile, velshift in zip(infiles, velshiftlist):
 wavestart_new = 3850.
 #dwave_new = 0.0440 #0.0455
 dwave_new = np.max(dwave_list)
-wavelen = 107000
+wavelen = 120000
 waveref = np.arange(wavelen)*dwave_new + wavestart_new
 print('Wavelength range: {0} - {1}'.format(waveref[0], waveref[-1]))
 print('Wavelength step size (CDELT1): {0}'.format(dwave_new))
@@ -80,9 +81,11 @@ print ' '
 
 # Write the final wavelengths and associated spectral data to a new FITS file.
 # Create an appropriate header.
-headernote = 'Modified w/ telluric shift'
+#headernote = 'Modified w/ telluric shift'
+headernote = 'Shifted to zero RV'
 for idx, specdata in enumerate(brandnewspeclist):
-	outfile = 's_' + infiles[idx][-24:]
+	#outfile = 's_' + infiles[idx][-24:]
+	outfile = 'rest_' + infiles[idx][-26:]
 	# Read in the original FITS header
 	hdu = fits.open(infiles[idx])
 	head = hdu[0].header
@@ -92,5 +95,5 @@ for idx, specdata in enumerate(brandnewspeclist):
 	head['cd1_1'] = (dwave_new, headernote)
 	fits.writeto(outfile, specdata, header=head, clobber=True, output_verify='ignore')#output_verify='fix')#, output_verify='warn')
 print ' '
-print 'New FITS files written in working directory. Filenames begin with \'s_\'.'
+print 'New FITS files written in working directory.'
 print ' '
