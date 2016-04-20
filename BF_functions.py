@@ -31,6 +31,70 @@ def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
     print(' ')
     return w1, m, r
 
+
+def read_one_specfile(infile = 'myspectrum.txt', isAPOGEE = False):
+    '''
+    Read in a single FITS or txt spectrum file
+    (Bare-bones version of read_specfiles, below)
+    Requires    infile, isAPOGEE
+    Returns     wave, spec
+    '''
+    if infile[-3:] == 'txt':
+        try:
+            wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
+            print('Text file {0}, isAPOGEE = {1}'.format(infile[-15:], isAPOGEE))
+        except:
+            print('{0} not found or cannot be opened'.format(infile))
+        if isAPOGEE == True: # we need to normalize it and sort by wavelength
+            spec = spec / np.median(spec)
+            spec = spec[np.argsort(wave)]
+            wave = wave[np.argsort(wave)]
+    elif infile[-4:] == 'fits' or infile[-4:] == 'FITS':
+        # assume it's a FITS file
+        # Read in the FITS file with all the data in the primary HDU
+        try:
+            hdu = fits.open(infile)
+        except:
+            print('{0} not found or cannot be opened'.format(infile))
+        else:
+            head = hdu[0].header
+            try: datetime = head['date-obs']
+            except: datetime = head['date']
+            print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-15:], isAPOGEE, datetime))                            
+        if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, and not normalized
+            spec = hdu[1].data ### APOGEE
+            spec = spec.flatten() ### APOGEE
+            spec = spec[::-1] ### APOGEE
+            spec = spec / np.median(spec)
+        else: # non-APOGEE (regular) option
+            spec = hdu[0].data
+        # Define the original wavelength scale
+        if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
+            wave = hdu[4].data ### APOGEE
+            wave = wave.flatten() ### APOGEE
+            wave = wave[::-1] ### APOGEE
+        else: # non-APOGEE (linear): create wavelength values from header data
+            headerdwave = head['cdelt1']
+            headerwavestart = head['crval1']
+            headerwavestop = headerwavestart + headerdwave*len(spec)
+            wave = np.arange(headerwavestart, headerwavestop, headerdwave)
+        if len(wave) != len(spec): # The wave array is sometimes 1 longer than it should be?
+            minlength = min(len(wave), len(spec))
+            wave = wave[0:minlength]
+            spec = spec[0:minlength]
+        try: # check to see if we have a file with log angstroms
+            logcheck = head['dispunit'] 
+        except:
+            logcheck = 'linear' # assume linear if no 'dispunit' is in header
+        if logcheck == 'log angstroms':
+            wave = np.power(10,wave) # make it linear
+            spec = spec / np.median(spec) # also normalize it to 1
+    else:
+        print('File does not end in \'txt\' or \'fits\', no spectrum loaded.')
+        wave = []; spec = []
+    return wave, spec
+    
+
 def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', isAPOGEE = False):
     '''
     Read in some FITS or TXT files that are spectra and may or may not be APOGEE
@@ -180,16 +244,16 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
         if len(partest) == 6: ngauss = 2
         elif len(partest) == 9: ngauss = 3
         else: print('something is wrong with your gausspars file!')       
-        minpars=[0.008, float(partest[1])-threshold, 0,  0.008, float(partest[4])-threshold, 0]
-        maxpars=[1.2,   float(partest[1])+threshold, 10, 1.2,   float(partest[4])+threshold, 10]
+        minpars=[0.002, float(partest[1])-threshold, 0,  0.002, float(partest[4])-threshold, 0]
+        maxpars=[1.2,   float(partest[1])+threshold, 15, 1.2,   float(partest[4])+threshold, 15]
         if ngauss == 2:
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
                     minpars=minpars, maxpars=maxpars, quiet=True, shh=True)
         elif ngauss == 3:
-            minpars.extend([0.008, float(partest[7])-threshold, 0])
-            maxpars.extend([1.2,   float(partest[7])+threshold, 10])
+            minpars.extend([0.002, float(partest[7])-threshold, 0])
+            maxpars.extend([1.2,   float(partest[7])+threshold, 15])
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
