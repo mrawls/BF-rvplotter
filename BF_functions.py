@@ -141,10 +141,13 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
                 wave = wave[::-1]
             else: # not APOGEE
                 spec = hdu[0].data # hope the info we want is in the zeroth HDU
-                headerdwave = head['cdelt1']
-                headerwavestart = head['crval1']
-                headerwavestop = headerwavestart + headerdwave*len(spec)
-                wave = np.arange(headerwavestart, headerwavestop, headerdwave)
+                try:
+                    headerdwave = head['cdelt1']
+                    headerwavestart = head['crval1']
+                    headerwavestop = headerwavestart + headerdwave*len(spec)
+                    wave = np.arange(headerwavestart, headerwavestop, headerdwave)
+                except:
+                    raise RuntimeError('Cannot find wavelength info in FITS header')
             if len(wave) != len(spec): # the wave array is sometimes 1 longer than it should be?
                 minlength = min(len(wave), len(spec))
                 wave = wave[0:minlength]
