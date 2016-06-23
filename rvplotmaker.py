@@ -7,122 +7,91 @@ Radial velocity plotter!
 Makes a plot with two panels: top is RV vs. time, bottom is RV vs. orbital phase
 
 Columns should be as follows
-BJD, PHASE, KEPLER_BJD, RV1, RV1_ERR, RV2, RV2_ERR, SOURCE
-(all of these are numbers, except 'source' is text)
+BJD, PHASE, KEPLER_BJD, RV1, RV1_ERR, RV2, RV2_ERR
 
 Update September 2015:
-More generalized for plotting RVs from two instruments for one target.
 Has two flag options
 1. apply some shift to the RVs before plotting them
 2. read in another set of calculated RVs from cols 8,9,10,11 for comparison and plot 
     RV1 = RV_col8 - RV_col3, RV2 = RV_col10 - RV_col5 instead, plus a line at RV = 0.
+    
+Update June 2016:
+Simplified some options; no longer manually sets point shape as a function of "source" string.
+If you want that functionality, use an older version of this code... it was messy.
+NOTE that any RV value with an error bar = 0 is not plotted!
 '''
 
 doShift = False
 compareRVs = False
+dateoffset = 2454833. # this value will be subtracted from bjds in pane vs. time
 
 ### Input EB parameters and RV filenames ###
 
-sysname = '9970396'
-filename = '../../RG_spectra/9970396/rvs_patrick.txt'
-timestart = 1550
-timeend = 2500
-phasemin = 0.48
-phasemax = 1.48
-RVmin = -59
-RVmax = 19
+sysname = 'Joni OB'; filename = '../../Joni_EBs/OBrvoutfile.txt'
+timestart = 1550; timeend = 2000
+phasemin = 0.48; phasemax = 1.48
+RVmin = -50; RVmax = 50
 
-#sysname = '3955867'
-#filename = '../../RG_spectra/3955867/rvs_final.txt'
-#timestart = 1650
-#timeend = 2350
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -49
-#RVmax = 69
+#sysname = '9970396'; filename = '../../RG_spectra/9970396/rvs_patrick.txt'
+#timestart = 1550; timeend = 2500
+#phasemin = 0.48; phasemax = 1.48
+#RVmin = -59; RVmax = 19
 
-#sysname = '8702921'
-#filename = '../../RG_spectra/8702921/rvs_final.txt'
-#timestart = 1200
-#timeend = 2200
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -29
-#RVmax = 9
+#sysname = '3955867'; filename = '../../RG_spectra/3955867/rvs_final.txt'
+#timestart = 1650; timeend = 2350
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -49; RVmax = 69
 
-#sysname = '9291629'
-#filename = '../../RG_spectra/9291629/rvs_final.txt'
-#timestart = 1650
-#timeend = 2350
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -99
-#RVmax = 34
+#sysname = '8702921'; filename = '../../RG_spectra/8702921/rvs_final.txt'
+#timestart = 1200; timeend = 2200
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -29; RVmax = 9
+
+#sysname = '9291629'; filename = '../../RG_spectra/9291629/rvs_final.txt'
+#timestart = 1650; timeend = 2350
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -99; RVmax = 34
 
 # for 8848288 (not one of our RG/EBs)
-#filename = '../../KIC_8848288/rvs_BF.txt'
-#sysname = '8848288'
-#timestart = 1310
-#timeend = 1350
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -24
-#RVmax = -13
+#sysname = '8848288'; filename = '../../KIC_8848288/rvs_BF.txt'
+#timestart = 1310; timeend = 1350
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -24; RVmax = -13
 
-#sysname = '9246715'
-
-#sysname = '5786154'
-#filename = '../../RG_spectra/5786154_1/rvs_patrick.txt'
-#timestart = 1200
-#timeend = 2200
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -55
-#RVmax = 39
+#sysname = '5786154'; filename = '../../RG_spectra/5786154_1/rvs_patrick.txt'
+#timestart = 1200; timeend = 2200
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -55; RVmax = 39
 
 #sysname = '8430105'
-#timestart = 1200
-#timeend = 2200
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -50
-#RVmax = 60
+#timestart = 1200; timeend = 2200
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -50; RVmax = 60
 
-#sysname = '10001167'
-#filename = '../../RG_spectra/10001167/rvs_jean.txt'
-#timestart = 1500
-#timeend = 2300
-#phasemin = 0.49
-#phasemax = 1.49
-#RVmin = -149
-#RVmax = -61
+#sysname = '10001167'; filename = '../../RG_spectra/10001167/rvs_jean.txt'
+#timestart = 1500; timeend = 2300
+#phasemin = 0.49; phasemax = 1.49
+#RVmin = -149; RVmax = -61
 
-#sysname = '7037405'
-#filename = '../../RG_spectra/7037405_1/rvs_final.txt'
-#timestart = 1550
-#timeend = 2550
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -79
-#RVmax = -1
+#sysname = '7037405'; filename = '../../RG_spectra/7037405_1/rvs_final.txt'
+#timestart = 1550; timeend = 2550
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -79; RVmax = -1
 
 #sysname = '8054233'
-#timestart = 1600
-#timeend = 2200
-#phasemin = 0.5
-#phasemax = 1.5
-#RVmin = -35
-#RVmax = 20
+#timestart = 1600; timeend = 2200
+#phasemin = 0.5; phasemax = 1.5
+#RVmin = -35; RVmax = 20
 
 # Other useful definitions
 red = '#e34a33' # red, star 1
 yel = '#fdbb84' # yellow, star 2
 
-# usecols=(0,1,3,4,5,6,7) # this is the default, with RVs in 3,4,5,6 not 8,9,10,11 (7=source!)
-bjd, phase, rv1, rverr1, rv2, rverr2, source = np.loadtxt(filename, comments='#', 
-    dtype={'names': ('bjd', 'phase', 'rv1', 'rverr1', 'rv2', 'rverr2', 'source'),
-    'formats': (np.float64, np.float64, np.float64, np.float64, np.float64, np.float64, '|S15')},
-    usecols=(0,1, 3,4,5,6, 7), unpack=True)
+# usecols=(0,1,3,4,5,6) # this is the default, with RVs in 3,4,5,6 not 8,9,10,11
+bjd, phase, rv1, rverr1, rv2, rverr2 = np.loadtxt(filename, comments='#', 
+    dtype={'names': ('bjd', 'phase', 'rv1', 'rverr1', 'rv2', 'rverr2'),
+    'formats': (np.float64, np.float64, np.float64, np.float64, np.float64, np.float64)},
+    usecols=(0,1, 3,4,5,6), unpack=True)
 
 if doShift == True:
     # apply a shift to each RV before plotting it
@@ -147,8 +116,7 @@ for idx, err in enumerate(rverr2):
 rv1mask = np.isfinite(rv1)
 rv2mask = np.isfinite(rv2)
 
-##################################
-## OPTIONAL FOR COMPARISON PURPOSES
+## OPTION to compare one set of RVs against another
 if compareRVs == True:
     rvjean1, errjean1, rvjean2, errjean2 = np.loadtxt(filename, comments='#', usecols=(8,9,10,11), unpack=True)
     for idx, err in enumerate(errjean1):
@@ -163,12 +131,9 @@ if compareRVs == True:
     rvjean2mask = np.isfinite(rvjean2)
     rv1 = rvjean1 - rv1 # REDEFINE RV ARRAYS AS DIFFERENCES
     rv2 = rvjean2 - rv2 # REDEFINE RV ARRAYS AS DIFFERENCES
-    RVmin = -5
-    RVmax = 5
-## OPTIONAL FOR COMPARISON PURPOSES
-##################################
+    RVmin = -5; RVmax = 5
 
-# Double the arrays so we can plot any phase from 0 to phase 2, if desired
+# Double the arrays so we can plot any phase from 0 to phase 2... assuming phase is in range (0,1)
 rv1_double = np.concatenate((rv1,rv1), axis=0)
 rv2_double = np.concatenate((rv2,rv2), axis=0)
 phase_double = np.concatenate((np.array(phase),np.array(phase)+1.0), axis=0)
@@ -187,59 +152,27 @@ ax2.xaxis.set_ticks_position('bottom')
 ax2.yaxis.set_ticks_position('left')
 plt.tick_params(axis='both', which='major', labelsize=20)
 # dotted lines to guide the eye
-plt.plot(bjd[rv1mask]-2454833, rv1[rv1mask], color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
-plt.plot(bjd[rv2mask]-2454833, rv2[rv2mask], color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
-for idx, label in enumerate(source):
-    if label == 'arces':
-        plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ko', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
-        plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ko', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
-#    elif label == 'tres':
-#        plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='kv', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
-#        plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='kv', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
-    elif label == 'apogee':
-        plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ks', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
-        plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ks', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)                
-    else:
-        plt.errorbar(bjd[idx]-2454833, rv1[idx], yerr=rverr1[idx], fmt='ko', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
-        plt.errorbar(bjd[idx]-2454833, rv2[idx], yerr=rverr2[idx], fmt='ko', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
-##plt.errorbar(bjd-2454833, rv1, yerr=rverr1, fmt='ko:', color='0.75', mfc=red, mec=red, ms=10, lw=1.5)
-##plt.errorbar(bjd-2454833, rv2, yerr=rverr2, fmt='ko:', color='0.75', mfc=yel, mec=yel, ms=10, lw=1.5)
-plt.xlabel("Time (BJD -- 2454833)", size=24, labelpad=10)
+plt.plot(bjd[rv1mask]-dateoffset, rv1[rv1mask], color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
+plt.plot(bjd[rv2mask]-dateoffset, rv2[rv2mask], color='0.75', mfc=None, mec=None, lw=1.5, ls=':')
+for idx, date in enumerate(bjd):
+    plt.errorbar(date-dateoffset, rv1[idx], yerr=rverr1[idx], fmt='ko', color='0.75', mfc=red, mec='k', ms=10, lw=1.5)
+    plt.errorbar(date-dateoffset, rv2[idx], yerr=rverr2[idx], fmt='ko', color='0.75', mfc=yel, mec='k', ms=10, lw=1.5)
+plt.xlabel("Time (BJD -- {0:.0f})".format(dateoffset), size=24, labelpad=10)
 
 # Draw horizontal line at RV = 0
 if compareRVs == True: plt.axhline(y=0, color='k', ls=':')
 
 # Folded RV vs phase
 ax1 = plt.subplot(2,1,2)
-#ax1.set_xlim([0.5, 1.5])
 plt.axis([phasemin, phasemax, RVmin, RVmax])
 ax1.spines['top'].set_visible(False)
 ax1.spines['right'].set_visible(False)
 ax1.xaxis.set_ticks_position('bottom')
 ax1.yaxis.set_ticks_position('left')
 plt.tick_params(axis='both', which='major', labelsize=20)
-for idx, label in enumerate(source):
-    idx2 = idx + len(source)
-    if label == 'arces':
-        plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='ARCES, Star 1' if idx==0 else '')
-        plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==0 else '')
-        plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
-        plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
-#    elif label == 'tres':
-#        plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='v', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='TRES, Star 1' if idx==0 else '')
-#        plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='v', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5, label='Star 2' if idx==0 else '')
-#        plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='v', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
-#        plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='v', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
-    elif label == 'apogee':
-        plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='s', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5, label='APOGEE, Star 1' if idx==16 else '')
-        plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)#, label='Star 2' if idx==16 else '')        
-        plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='s', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
-        plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='s', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
-    else:
-        plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
-        plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
-        plt.errorbar(phase_double[idx2], rv1_double[idx2], yerr=rverr1_double[idx2], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
-        plt.errorbar(phase_double[idx2], rv2_double[idx2], yerr=rverr2_double[idx2], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
+for idx, ph in enumerate(phase_double):
+    plt.errorbar(phase_double[idx], rv1_double[idx], yerr=rverr1_double[idx], marker='o', color=red, mec='k', ecolor=red, ms=10, ls='None', lw=1.5)
+    plt.errorbar(phase_double[idx], rv2_double[idx], yerr=rverr2_double[idx], marker='o', color=yel, mec='k', ecolor=yel, ms=10, ls='None', lw=1.5)
 plt.xlabel("Orbital Phase", size=24)
 
 # Draw vertical lines at phase = 0.5
@@ -249,8 +182,8 @@ plt.xlabel("Orbital Phase", size=24)
 # Draw horizontal line at RV = 0
 if compareRVs == True: plt.axhline(y=0, color='k', ls=':')
 
-# Create the legend and y-axis label
-plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
+# Option for a legend and labels (note: for a legend you will need to add a label to the plt.errorbar commands)
+#plt.legend(ncol=2, loc=1, fontsize=20, numpoints=1, frameon=False, bbox_to_anchor=(1,2.35), columnspacing=0.7)
 fig.text(0.07, 0.5, 'Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=24, rotation='vertical')
 fig.text(0.14, 0.115, 'Folded', size=24)
 fig.text(0.14, 0.55, 'Unfolded', size=24)
