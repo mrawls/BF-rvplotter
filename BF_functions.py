@@ -26,12 +26,12 @@ def logify_spec(isAPOGEE=False, w00=5400, n=38750, stepV=1.7, m=171):
 #        n = 38750           # desired length of the log-wave vector in pixels (must be EVEN) 
 #    stepV = 1.7             # step in velocities in the wavelength vector w1
 #    m = 171                 # length of BF (must be ODD)
+### GUIDELINES FOR CHOOSING GOOD INPUT VALUES ###
     r = stepV/299792.458     # put stepV in km/s/pix
     w1 = w00 * np.power((1+r), np.arange(float(n)))
     print('The new log-wavelength scale will span %d - %d A with stepsize %f km/s.' % (w1[0], w1[-1], stepV))
     print(' ')
     return w1, m, r
-
 
 def read_one_specfile(infile = 'myspectrum.txt', isAPOGEE = False):
     '''
@@ -46,8 +46,7 @@ def read_one_specfile(infile = 'myspectrum.txt', isAPOGEE = False):
             print('Text file {0}, isAPOGEE = {1}'.format(infile[-15:], isAPOGEE))
         except:
             raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(infile))
-        if isAPOGEE == True: # we need to normalize it and sort by wavelength
-            spec = spec / np.median(spec)
+        if isAPOGEE == True: # we need to sort by wavelength
             spec = spec[np.argsort(wave)]
             wave = wave[np.argsort(wave)]
     elif infile[-4:] == 'fits' or infile[-4:] == 'FITS':
@@ -61,19 +60,18 @@ def read_one_specfile(infile = 'myspectrum.txt', isAPOGEE = False):
             head = hdu[0].header
             try: datetime = head['date-obs']
             except: datetime = head['date']
-            print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-15:], isAPOGEE, datetime))                            
-        if isAPOGEE == True: # APOGEE: the data is in a funny place, backwards, and not normalized
-            spec = hdu[1].data ### APOGEE
-            spec = spec.flatten() ### APOGEE
-            spec = spec[::-1] ### APOGEE
-            spec = spec / np.median(spec)
+            print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-17:], isAPOGEE, datetime))                            
+        if isAPOGEE == True: # APOGEE: the data is in a funny place and backwards
+            spec = hdu[1].data
+            spec = spec.flatten()
+            spec = spec[::-1]
         else: # non-APOGEE (regular) option
             spec = hdu[0].data
         # Define the original wavelength scale
         if isAPOGEE == True: # APOGEE: read wavelength values straight from FITS file
-            wave = hdu[4].data ### APOGEE
-            wave = wave.flatten() ### APOGEE
-            wave = wave[::-1] ### APOGEE
+            wave = hdu[4].data
+            wave = wave.flatten()
+            wave = wave[::-1]
         else: # non-APOGEE (linear): create wavelength values from header data
             headerdwave = head['cdelt1']
             headerwavestart = head['crval1']
@@ -89,13 +87,11 @@ def read_one_specfile(infile = 'myspectrum.txt', isAPOGEE = False):
             logcheck = 'linear' # assume linear if no 'dispunit' is in header
         if logcheck == 'log angstroms':
             wave = np.power(10,wave) # make it linear
-            spec = spec / np.median(spec) # also normalize it to 1
     else:
         print('File does not end in \'txt\' or \'fits\', no spectrum loaded.')
         wave = []; spec = []
     return wave, spec
     
-
 def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', isAPOGEE = False):
     '''
     Read in some FITS or TXT files that are spectra and may or may not be APOGEE
@@ -127,18 +123,12 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
                 try: datetime = head['date-obs']
                 except: datetime = head['date']
                 datetimelist.append(Time(datetime, scale='utc', format='isot'))
-                print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-15:], isAPOGEE, datetime))
+                print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-17:], isAPOGEE, datetime))
             except:
                 raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(filename))
             # it's time to dig out the spectral (flux) data and the wavelength scale!
             if isAPOGEE == True: # APOGEE: the data is in a funny place and backwards
-                spec = hdu[1].data
-                spec = spec.flatten()
-                spec = spec[::-1]
-                spec = spec / np.median(spec) # WARNING really basic, possibly bad normalization
-                wave = hdu[4].data
-                wave = wave.flatten()
-                wave = wave[::-1]
+                wave, spec = ProcessAPOGEEFITS(hdu)
             else: # not APOGEE
                 spec = hdu[0].data # hope the info we want is in the zeroth HDU
                 try:
@@ -158,18 +148,17 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
                 logcheck = 'linear' # hopefully, at least
             if logcheck == 'log angstroms':
                 wave = np.power(10, wave) # make it linear
-                spec = spec / np.median(spec) # WARNING really basic, possibly bad normalization
+                #spec = spec / np.median(spec) # WARNING really basic, possibly bad normalization
         else: # treat it like a text file
             filenamelist.append(infile)
             datetime = np.loadtxt(bjdinfile, comments='#', usecols=(1,), unpack=True)[i]
             datetimelist.append(Time(datetime, scale='utc', format='jd'))
             try:
                 wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
-                print('Text file {0}, isAPOGEE = {1}, bjdinfile date {2}'.format(infile[-15:], isAPOGEE, datetime))
+                print('Text file {0}, isAPOGEE = {1}, bjdinfile date {2}'.format(infile[-17:], isAPOGEE, datetime))
             except:
                 raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(filename))
-            if isAPOGEE == True: # we need to normalize it and sort by wavelength
-                spec = spec / np.median(spec) # WARNING really basic, possibly bad normalization
+            if isAPOGEE == True: # we need sort by wavelength, just in case it hasn't been
                 spec = spec[np.argsort(wave)]
                 wave = wave[np.argsort(wave)]
 #            if infile[0:5] == 'trans': # you have a model telluric spectrum in nm, not A
@@ -183,6 +172,19 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
     nspec = i
     f1.close()
     return nspec, filenamelist, datetimelist, wavelist, speclist
+
+def ProcessAPOGEEFITS(hdu):
+    '''
+    Turns an APOGEE FITS hdu into a pair of wavelength and spectrum ndarrays
+    '''
+    spec = hdu[1].data
+    spec = spec.flatten()
+    spec = spec[::-1]
+    spec = spec / np.median(spec) # WARNING really basic, possibly bad normalization
+    wave = hdu[4].data
+    wave = wave.flatten()
+    wave = wave[::-1]
+    return wave, spec
 
 def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=10):
     '''
@@ -254,8 +256,8 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
         # RV1 for observation i is bffitlist[i][0][1] +/- bffitlist[i][2][1].
         # RV2 for observation i is bffitlist[i][0][4] +/- bffitlist[i][2][4].
         # (note: need to check if bffit[2] == None before calling bffit[2][1] or bffit[2][4])
-        print('%s \t %.5f %.5f %.5f %.5f \t %.5f %.5f %.5f %.5f' % (filenamelist[i][-15:],
-            newbffit[0][0], newbffit[0][2], newbffit[0][1], newbffit[2][1],
+        print('{0:s}    {1:.3f} {2:.2f} {3:.4f} {4:.4f} \t {5:.3f} {6:.2f} {7:.4f} {8:.4f}'.format(
+            filenamelist[i][-20:], newbffit[0][0], newbffit[0][2], newbffit[0][1], newbffit[2][1],
             newbffit[0][3], newbffit[0][5], newbffit[0][4], newbffit[2][4]))
     print(' ')
     print('You MUST manually guesstimate the location of each Gaussian\'s peak in %s!' % gausspars)
