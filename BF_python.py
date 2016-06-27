@@ -133,7 +133,7 @@ w00 = 15145; n = 15000; stepV = 1.5
 #rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 #rvneg = -59; rvpos = 59; ymin = -0.05; ymax = 0.30 # 5786154
 
-rvneg = -49; rvpos = 99; ymin = -0.2; ymax = 0.6 # test for joni OA
+rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
@@ -145,6 +145,7 @@ rvneg = -49; rvpos = 99; ymin = -0.2; ymax = 0.6 # test for joni OA
 ##########
 
 print('Welcome to the Broadening Function party!')
+print('')
 print('MAKE SURE THIS IS WHAT YOU WANT:')
 print('You set Porb = {0} days, BJD0 = {1} days'.format(period, BJD0))
 
@@ -155,7 +156,9 @@ print('You set Porb = {0} days, BJD0 = {1} days'.format(period, BJD0))
 w1, m, r = bff.logify_spec(isAPOGEE, w00, n, stepV, m)
 
 # READ IN ALL THE THINGS
-nspec, filenamelist, datetimelist, wavelist, speclist = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
+specdata = bff.read_specfiles(infiles, bjdinfile, isAPOGEE)
+nspec = specdata[0]; filenamelist = specdata[1]
+datetimelist = specdata[2]; wavelist = specdata[3]; speclist = specdata[4]
 
 # INTERPOLATE THE TEMPLATE AND OBJECT SPECTRA ONTO THE NEW LOG-WAVELENGTH GRID
 # OPTION TO PLOT THIS (commented out for now)
@@ -169,7 +172,7 @@ for i in range (0, nspec):
     newspec = np.interp(w1, wavelist[i], speclist[i])
     newspeclist.append(newspec)
     if SpecPlot == True:
-        plt.plot(w1, newspec+yoffset, label=datetimelist[i].iso[0:10], color='k')
+        plt.plot(w1, newspec+yoffset, label=datetimelist[i].iso[0:10], color='b')
     yoffset = yoffset + 1
 if SpecPlot == True:
     ##plt.legend()
@@ -187,6 +190,7 @@ for i in range (0, nspec):
 	bf = svd.getBroadeningFunction(newspeclist[i]) # this is a full matrix
 	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
 	# Smooth the array-like broadening function
+	# 1ST LINE - python 2.7 with old version of pandas; 2ND LINE - python 3.5 with new version of pandas
 	#bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
 	bfsmooth = amp*pd.Series(bfarray).rolling(window=5, win_type='gaussian', center=True).mean(std=smoothstd)
 	# The rolling window makes nans at the start because it's a punk.
@@ -211,9 +215,9 @@ bf_ind = svd.getRVAxis(r, 1) + rvstd - bcvstd
 #plt.ylabel('Singular Values')
 #plt.show()
 
-# OPTION TO PLOT THE SMOOTHED BFs (commented out for now)
+# OPTION TO PLOT THE SMOOTHED BFs
 ##plt.figure(3)
-plt.axis([rvneg, rvpos, -0.2, 12])
+plt.axis([rvneg, rvpos, -0.2, float(nspec)/2.5])
 plt.xlabel('Radial Velocity (km s$^{-1}$)')
 plt.ylabel('Broadening Function (arbitrary amplitude)')
 yoffset = 0.0
@@ -234,7 +238,10 @@ for i in range(1, len(bffitlist)):
     rvraw2_err.append(bffitlist[i][2][4])
 
 # CALCULATE ORBITAL PHASES AND FINAL RV CURVE
-phase, bjdfunny, rv1, rv2, rv1_err, rv2_err = bff.rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd)
+rvdata = bff.rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd)
+phase = rvdata[0]; bjdfunny = rvdata[1]
+rv1 = rvdata[2]; rv2 = rvdata[3]
+rv1_err = rvdata[4]; rv2_err = rvdata[5]
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
