@@ -27,7 +27,18 @@ def getOrderWavelengths(hdu):
     some code is from https://github.com/kgullikson88/General/blob/master/readmultispec.py
     '''
     header = hdu[0].header
-    # each order has a set of N=lenwat useful parameters hidden in the WAT2 header entries
+    #print(list(header.keys()))
+
+    # before things get interesting, try a normal linear dispersion
+    try:
+        dwave = header['cdelt1']
+        wavestart = header['crval1']
+        wavestop = headerwavestart + headerdwave*len(spec)
+        wave = np.arange(wavestart, wavestop, dwave)
+    except KeyError:
+        pass
+    
+    # OK then, each order has a set of N=lenwat useful parameters hidden in the WAT2 header entries
     WAT2string = ''
     for key in header.keys():
         if 'WAT2_' in key: # build a giant string
@@ -58,9 +69,9 @@ def getOrderWavelengths(hdu):
         z = np.float64(order[6])    # Doppler factor
         apmin, apmax = float(order[7]), float(order[8])  # original pixel limits along the spatial axis, not used
         if dtype == '0':   # linear
-            wavelengths = (np.arange(nwave, dtype=np.float64) * dw + w1) * (1.0 + z)
+            wavelengths = (w1 + dw * np.arange(nwave, dtype=np.float64)) / (1. + z)
         elif dtype == '1': # log
-            wavelengths = (np.arange(nwave, dtype=np.float64) * dw + w1) * (1.0 + z)
+            wavelengths = (w1 + dw * np.arange(nwave, dtype=np.float64)) / (1. + z)
             wavelengths = np.power(10., wavelengths)
         elif dtype == '2': # nonlinear
             if np.float64(order[6]) != 0:
@@ -152,16 +163,22 @@ for idx, (waves, fluxes) in enumerate(zip(fitswaves, fitsfluxes)):
     fitsfluxes[idx] = fluxes[np.argsort(waves)]
     fitswaves[idx] = waves[np.argsort(waves)]
 
+# Continuum flatten and plot all the orders
 flatwavelist = []
 flatfluxlist = []
 for waves, fluxes in zip(fitswaves[30:92], fitsfluxes[30:92]):
-    flatwaves, flatfluxes = continuumFlattenSpec(waves, fluxes, fitplot=False)
+    flatwaves, flatfluxes = continuumFlattenSpec(waves, fluxes, window=50, fitplot=False)
     trunc = int(len(flatwaves)/4)
-    flatwavelist.append(flatwaves[trunc:-trunc])
-    flatfluxlist.append(flatfluxes[trunc:-trunc])
-    plt.plot(flatwaves[trunc:-trunc], flatfluxes[trunc:-trunc])
+    flatwavelist.append(flatwaves)
+    flatfluxlist.append(flatfluxes)
+    plt.plot(flatwaves, flatfluxes)
+#    flatwavelist.append(flatwaves[trunc:-trunc])
+#    flatfluxlist.append(flatfluxes[trunc:-trunc])
+#    plt.plot(flatwaves[trunc:-trunc], flatfluxes[trunc:-trunc])
 plt.show()
 
+# Create a 1D spectrum of arbitrary length by combining orders
+# WORK IN PROGRESS
 newwaves = np.arange(4400, 5900, 0.15)
 allwaves = np.array(flatwavelist[::-1]).flatten()
 allfluxes = np.array(flatfluxlist[::-1]).flatten()
