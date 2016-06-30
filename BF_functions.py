@@ -125,7 +125,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
                 datetimelist.append(Time(datetime, scale='utc', format='isot'))
                 print('FITS file {0}, isAPOGEE = {1}, header date {2}'.format(infile[-17:], isAPOGEE, datetime))
             except:
-                raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(filename))
+                raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(infile))
             # it's time to dig out the spectral (flux) data and the wavelength scale!
             if isAPOGEE == True: # APOGEE: the data is in a funny place and backwards
                 wave, spec = ProcessAPOGEEFITS(hdu)
@@ -157,7 +157,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
                 wave, spec = np.loadtxt(open(infile), comments='#', usecols=(0,1), unpack=True)
                 print('Text file {0}, isAPOGEE = {1}, bjdinfile date {2}'.format(infile[-17:], isAPOGEE, datetime))
             except:
-                raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(filename))
+                raise FileNotFoundError('The file {0} was not found or cannot be opened'.format(infile))
             if isAPOGEE == True: # we need sort by wavelength, just in case it hasn't been
                 spec = spec[np.argsort(wave)]
                 wave = wave[np.argsort(wave)]
@@ -244,7 +244,7 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
             else:
                 newbffit = bffit
         except:
-            print('WARNING - gaussfit is acting up, fit may not have happened, adjust gausspars file:')
+            print('WARNING - gaussfit is acting up, fit failed for the next row, adjust gausspars file:')
             if not bffit[2]: # this catches the case where bffit[2] = None
                 newbffit[0] = bffit[0]
                 newbffit[1] = bffit[1]
@@ -265,16 +265,16 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
     print(' ')
     return bffitlist
 
-def rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd):
+def rvphasecalc(bjdinfile, bjdoffset, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd):
     rv1 = []; rv2 = []
     rv1.append(0); rv2.append(0)
     rv1_err = []; rv2_err = []
     rv1_err.append(0); rv2_err.append(0)
     g1 = open(bjdinfile)
-    g2 = open(outfile, 'w')
+    #g2 = open(outfile, 'w')
     print('Calculating RVs...')
     bjdmid, bcv = np.loadtxt(g1, comments='#', usecols=(1,2), unpack=True)
-    bjdfunny = bjdmid - 2454833.
+    bjdfunny = bjdmid - bjdoffset
     phase = []
     phase.append(0)
     for i in range(1, nspec):
@@ -289,11 +289,11 @@ def rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvr
         rv2.append(rvraw2[i] + bcv[i] - rvstd - bcvstd)
         rv1_err.append(rvraw1_err[i])
         rv2_err.append(rvraw2_err[i])
-        print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], 
-                rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
+        #print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdmid[i], phase[i], bjdfunny[i], 
+        #        rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
     g1.close()
-    g2.close()
+    #g2.close()
     print(' ')
-    print('BJD, phase, and RVs written to %s.' % outfile)
-    print('Use rvplotmaker.py to plot the RV curve.')
+    #print('BJD, phase, and RVs written to %s.' % outfile)
+    #print('Use rvplotmaker.py to plot the RV curve.')
     return phase, bjdfunny, rv1, rv2, rv1_err, rv2_err

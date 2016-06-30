@@ -60,17 +60,17 @@ both in days, and the constant RV and BCV of whatever template you are using.
 #gausspars = '../../RG_spectra/9291629/gaussfit_arcesBF.txt'
 #outfile =   '../../RG_spectra/9291629/rvoutfile_new_arcesBF.txt'
 
-# joni OA
-infiles =   '../../joni_EBs/OAin.txt'
-bjdinfile = '../../joni_EBs/OAbjd.txt'
-gausspars = '../../joni_EBs/OAgauss.txt'
-outfile =   '../../joni_EBs/OAmeredith.txt'
+# joni's EBs
+#infiles =   '../../joni_EBs/OAin.txt'
+#bjdinfile = '../../joni_EBs/OAbjd.txt'
+#gausspars = '../../joni_EBs/OAgauss.txt'
+#outfile =   '../../joni_EBs/OAmeredith.txt'
 
-# (for KIC 8848288)
-#infiles = '../../KIC_8848288/infiles.txt'
-#bjdinfile = '../../KIC_8848288/bjdfile.txt'
-#gausspars = '../../KIC_8848288/gaussfit.txt'
-#outfile = '../../KIC_8848288/rvs2_BF.txt'
+# (for KIC 8848288, ie TYC 3559)
+infiles =    '../../KIC_8848288/infiles.txt'
+bjdinfile =  '../../KIC_8848288/bjdfile.txt'
+gausspars =  '../../KIC_8848288/gaussfit.txt'
+outfile =    '../../KIC_8848288/rvs_revisited2_BF.txt'
 
 # (the original infiles)
 #infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
@@ -79,9 +79,10 @@ outfile =   '../../joni_EBs/OAmeredith.txt'
 #outfile = '../../RG_spectra/9246715/redo_plot_BFoutput.txt'
 
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
-isAPOGEE = True        # toggle to use near-IR stuff, or not
-SpecPlot = True        # toggle to plot spectra before BFs, or not
+isAPOGEE = False        # toggle to use near-IR stuff, or not
+SpecPlot = True         # toggle to plot spectra before BFs, or not
 threshold = 10          # margin in km/s for fitting each gaussian's position
+bjdoffset = 2454833.    # difference between real BJDs and 'bjdfunny' (truncated BJDs)
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
 #period = 171.277697; BJD0 = 2455170.514777 # 9246715
@@ -89,35 +90,39 @@ threshold = 10          # margin in km/s for fitting each gaussian's position
 #period = 63.327106; BJD0 = 2454976.635546 # 8430105
 #period = 120.3903; BJD0 = 2454957.682 # 10001167
 #period = 358.08; BJD0 = 2454962.684595 # 4663623
-#period = 5.56648; BJD0 = 2454904.8038 # (8848288)
 #period = 20.686424; BJD0 = 2454966.8914 # 9291629
 #period = 19.38446; BJD0 = 2454970.2139 # 8702921
 #period = 33.65685; BJD0 = 2454960.8989 # 3955867
 #period = 235.300; BJD0 = 2455190.53 #9970396
 #period = 1058.23; BJD0 = 2454751.806288 #8054233
 #period = 197.9182; BJD0 = 2455162.6140 #5786154
+period = 5.56648; BJD0 = 2454904.8038 # (8848288)
 
-period = 40.8778427; BJD0 = 2454955.556300
+# joni's OA
+#period = 40.8778427; BJD0 = 2454955.556300
 
 # RADIAL VELOCITY AND BCV INFO FOR TEMPLATE (km/s; set both to 0 if using a model !!!)
 #rvstd = -64.422; bcvstd = 10.747 # HD168009 (fullspec26), G1 V star
 #rvstd = -21.619; bcvstd = 16.571 # HD182488 (fullspec28), G9 V star
 #rvstd = -21.123; bcvstd = 12.499 # HD196850 (fullspec32), G1 V star
-#rvstd = 0; bcvstd = 0 # model template
-rvstd = 0; bcvstd = 13.5073
+rvstd = 0; bcvstd = 0 # model template
+#rvstd = 0; bcvstd = 13.5073 # joni's OA with self-template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
-amp = 6.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+amp = 5.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
 smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
 #w00 = 5400          # starting wavelength for new grid
 #n = 38750           # number of wavelength points for new grid
 #stepV = 1.7         # roughly 3e5 / (max_wavelength / wavelength_step) km/s, rounded down
-m = 251             # length of the BF (must be longer if RVs are far from 0)
-# good values for APOGEE:
-w00 = 15145; n = 15000; stepV = 1.5
+m = 171             # length of the BF (must be longer if RVs are far from 0)
+## good values for APOGEE:
+#w00 = 15145; n = 15000; stepV = 1.5
 #w00 = 15670; n = 2000; stepV = 1.5
-# good values for ARCES & TRES together: w00 = 5400, n = 38750, stepV = 1.7
-# good values for 8848288 (HET low & high res): w00 = 4408, n = 42000, stepV = 2.0
+## good values for ARCES & TRES together:
+#w00 = 5400; n = 38750; stepV = 1.7
+## good values for 8848288 (HET low & high res):
+#w00 = 4408; n = 42000; stepV = 2.0
+w00 = 4408; n = 50000; stepV = 1.7
 
 # STUFF TO MAKE PLOTS LOOK NICE
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
@@ -125,15 +130,15 @@ w00 = 15145; n = 15000; stepV = 1.5
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.35 # 8430105
 #rvneg = -170; rvpos = 5; ymin = -0.05; ymax = 0.15 # 10001167
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 4663623
-#rvneg = -40; rvpos = 20; ymin = -0.4; ymax = 1.2 # (8848288)
 #rvneg = -109; rvpos = 79; ymin = -0.05; ymax = 0.45 # 9291629
 #rvneg = -95; rvpos = 130; ymin = -0.05; ymax = 0.20 # 8702921
 #rvneg = -99; rvpos = 99; ymin = -0.05; ymax = 0.30 # 3955867
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
 #rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 #rvneg = -59; rvpos = 59; ymin = -0.05; ymax = 0.30 # 5786154
+rvneg = -59; rvpos = 19; ymin = -0.15; ymax = 0.90 # (8848288)
 
-rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
+#rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
 
 # some previously set values for posterity ...
 # ARCES ARCTURUS OBSERVATION
@@ -238,10 +243,34 @@ for i in range(1, len(bffitlist)):
     rvraw2_err.append(bffitlist[i][2][4])
 
 # CALCULATE ORBITAL PHASES AND FINAL RV CURVE
-rvdata = bff.rvphasecalc(bjdinfile, outfile, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd)
+rvdata = bff.rvphasecalc(bjdinfile, bjdoffset, nspec, period, BJD0, rvraw1, rvraw1_err, rvraw2, rvraw2_err, rvstd, bcvstd)
 phase = rvdata[0]; bjdfunny = rvdata[1]
 rv1 = rvdata[2]; rv2 = rvdata[3]
 rv1_err = rvdata[4]; rv2_err = rvdata[5]
+g2 = open(outfile, 'w')
+print('# RVs calculated with BF_python.py', file=g2)
+print('#', file=g2)
+print('# Porb = {0} days, BJD0 = {1} days'.format(period, BJD0), file=g2)
+print('# Wavelength axis = [{0} - {1}] Angstroms'.format(w1[0], w1[-1]), file=g2)
+print('#', file=g2)
+print('# Template spectrum (line 0 of infiles):  {0}'.format(filenamelist[0]), file=g2)
+print('# RV of template, BCV of template (km/s): {0}, {1}'.format(rvstd, bcvstd), file=g2)
+print('#', file=g2)
+print('# List of all input spectra (infiles): {0}'.format(infiles), file=g2)
+print('# Target BJD and BCV info (bjdinfile): {0}'.format(bjdinfile), file=g2)
+print('# Gaussian fit guesses (gausspars):    {0}'.format(gausspars), file=g2)
+print('#', file=g2)
+print('# BF parameters: w00 = {0}; n = {1}; stepV = {2}'.format(w00, n, stepV), file=g2)
+print('# BF parameters: amp = {0}; smoothstd = {1}; m = {2}'.format(amp, smoothstd, m), file=g2)
+print('#', file=g2)
+print('# time, phase, adjusted_time, RV1 [km/s], error1 [km/s], RV2 [km/s], error2 [km/s]', file=g2)
+print('#', file=g2)
+for i in range(1, nspec):
+    print ('%.9f %.9f %.9f %.5f %.5f %.5f %.5f' % (bjdfunny[i] + bjdoffset, phase[i], bjdfunny[i], 
+            rv1[i], rv1_err[i], rv2[i], rv2_err[i]), file=g2)
+g2.close()
+print('BJD, phase, and RVs written to %s.' % outfile)
+print('Use rvplotmaker.py to plot the RV curve.')
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
