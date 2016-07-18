@@ -61,10 +61,10 @@ both in days, and the constant RV and BCV of whatever template you are using.
 #outfile =   '../../RG_spectra/9291629/rvoutfile_new_arcesBF.txt'
 
 # joni's EBs
-#infiles =   '../../joni_EBs/OAin.txt'
+#infiles =   '../../joni_EBs/OAinfits.txt'
 #bjdinfile = '../../joni_EBs/OAbjd.txt'
 #gausspars = '../../joni_EBs/OAgauss.txt'
-#outfile =   '../../joni_EBs/OAmeredith.txt'
+#outfile =   '../../joni_EBs/OAmeredith_take2.txt'
 
 # (for KIC 8848288, ie TYC 3559)
 infiles =    '../../KIC_8848288/infiles.txt'
@@ -110,7 +110,7 @@ rvstd = 0; bcvstd = 0 # model template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
 amp = 5.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
-smoothstd = 1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
+smoothstd = 1.0 #1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
 #w00 = 5400          # starting wavelength for new grid
 #n = 38750           # number of wavelength points for new grid
 #stepV = 1.7         # roughly 3e5 / (max_wavelength / wavelength_step) km/s, rounded down
@@ -122,7 +122,7 @@ m = 171             # length of the BF (must be longer if RVs are far from 0)
 #w00 = 5400; n = 38750; stepV = 1.7
 ## good values for 8848288 (HET low & high res):
 #w00 = 4408; n = 42000; stepV = 2.0
-w00 = 4408; n = 50000; stepV = 1.7
+w00 = 4408; n = 55000; stepV = 1.5
 
 # STUFF TO MAKE PLOTS LOOK NICE
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
@@ -136,7 +136,7 @@ w00 = 4408; n = 50000; stepV = 1.7
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
 #rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 #rvneg = -59; rvpos = 59; ymin = -0.05; ymax = 0.30 # 5786154
-rvneg = -59; rvpos = 19; ymin = -0.15; ymax = 0.90 # (8848288)
+rvneg = -59; rvpos = 19; ymin = -0.15; ymax = 0.50 # (8848288)
 
 #rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
 
@@ -272,6 +272,8 @@ g2.close()
 print('BJD, phase, and RVs written to %s.' % outfile)
 print('Use rvplotmaker.py to plot the RV curve.')
 
+#print(bffitlist[1])
+
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
 #plt.figure(4)
@@ -298,7 +300,7 @@ for i in range (1,nspec):
 	plt.text(xmax - 0.25*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
 	plt.text(xmax - 0.35*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
 	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, ls='-', label='Smoothed BF')
-	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=2, ls='--', label='Two-Gaussian fit')
+	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=2, ls='--', label='Gaussian fit')
 	# OPTION TO PLOT VERTICAL LINE AT ZERO
 	plt.axvline(x=0, color='0.75')	
 	# print legend
