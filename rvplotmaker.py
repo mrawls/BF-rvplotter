@@ -6,19 +6,18 @@ from matplotlib.collections import RegularPolyCollection
 Radial velocity plotter!
 Makes a plot with two panels: top is RV vs. time, bottom is RV vs. orbital phase
 
-Columns should be as follows
-BJD, PHASE, KEPLER_BJD, RV1, RV1_ERR, RV2, RV2_ERR
+You need to have these columns in your input file: TIME, PHASE, RV1, RV1_ERR, RV2, RV2_ERR
 
 Update September 2015:
 Has two flag options
-1. apply some shift to the RVs before plotting them
-2. read in another set of calculated RVs from cols 8,9,10,11 for comparison and plot 
-    RV1 = RV_col8 - RV_col3, RV2 = RV_col10 - RV_col5 instead, plus a line at RV = 0.
+1. apply some shift to the RVs before plotting them (doShift)
+2. read in another set of calculated RVs from cols 8,9,10,11 and plot RV1 = RV_col8-RV_col3
+   and RV2 = RV_col10-RV_col5, plus a line at RV = 0 (compareRVs)
     
 Update June 2016:
 Simplified some options; no longer manually sets point shape as a function of "source" string.
 If you want that functionality, use an older version of this code... it was messy.
-NOTE that any RV value with an error bar = 0 is not plotted!
+**NOTE that any RV value with an error bar = 0 is not plotted!**
 '''
 
 doShift = False
