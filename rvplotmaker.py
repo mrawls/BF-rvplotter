@@ -27,10 +27,16 @@ dateoffset = 2454833. # this value will be subtracted from bjds in pane vs. time
 
 ### Input EB parameters and RV filenames ###
 
-sysname = 'Joni OB'; filename = '../../Joni_EBs/OBrvoutfile.txt'
-timestart = 1550; timeend = 2000
-phasemin = 0.48; phasemax = 1.48
-RVmin = -50; RVmax = 50
+#sysname = 'Joni OB'; filename = '../../Joni_EBs/OBrvoutfile.txt'
+#timestart = 1550; timeend = 2000
+#phasemin = 0.48; phasemax = 1.48
+#RVmin = -50; RVmax = 50
+
+# for 8848288 (not one of our RG/EBs)
+sysname = '8848288'; filename = '../../KIC_8848288/rvs_revisited2_BF.txt'
+timestart = 1310; timeend = 1350
+phasemin = 0.5; phasemax = 1.5
+RVmin = -45; RVmax = 0
 
 #sysname = '9970396'; filename = '../../RG_spectra/9970396/rvs_patrick.txt'
 #timestart = 1550; timeend = 2500
@@ -51,12 +57,6 @@ RVmin = -50; RVmax = 50
 #timestart = 1650; timeend = 2350
 #phasemin = 0.5; phasemax = 1.5
 #RVmin = -99; RVmax = 34
-
-# for 8848288 (not one of our RG/EBs)
-#sysname = '8848288'; filename = '../../KIC_8848288/rvs_BF.txt'
-#timestart = 1310; timeend = 1350
-#phasemin = 0.5; phasemax = 1.5
-#RVmin = -24; RVmax = -13
 
 #sysname = '5786154'; filename = '../../RG_spectra/5786154_1/rvs_patrick.txt'
 #timestart = 1200; timeend = 2200
