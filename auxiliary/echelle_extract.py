@@ -2,13 +2,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 import h5py
-
-fitsfile = '../../RG_spectra/tequila_201604/kplr7037405/140422.0024.ec.fits'
-#fitsfile = '../../KIC_8848288/tyc3559/TYC3559-02080-1.0024.ec.fits'
+'''
+Reads in an ARCES spectrum that has been reduced but is still 2D (multiorder) FITS
+Uses info in WAT2_* FITS headers to compute a wavelength solution for each order: *raw spectrum*
+Attempts to measure the continuum and divide by it: *flattened spectrum*
+--> this result is very sensitive to the parameters you feed continuumFlattenSpec!!
+Saves the *raw* and *flattened* spectra (wavelength, flux) arrays to a new HDF5 file
+--> this file is formatted so Starfish can read in the raw spectra! (still 2D/multiorder)
+(wtf is Starfish: http://iancze.github.io/Starfish/current/overview.html)
+'''
 
 def moving_average(series, window=100, sigma=50):
     '''
     Calculate the moving average of a series using scipy. Used by continuumFlattenSpec.
+    Borrowed from http://www.nehalemlabs.net/prototype/blog/2014/04/12/how-to-fix-scipys-interpolating-spline-default-behavior/
     '''
     from scipy.signal import gaussian
     from scipy.ndimage import filters
@@ -110,7 +117,7 @@ def getOrderWavelengths(hdu):
     fitswaves = np.array(fitswaves, dtype=np.float64)
     return fitswaves # numpy array
 
-def continuumFlattenSpec(waves, fluxes, window=50, fitplot=True):
+def continuumFlattenSpec(waves, fluxes, id=0, window=50, fitplot=True):
     '''
     Fits a spline to a spectrum and divides to continuum flatten it.
     Returns waves and fluxes/continuum with length = original_length - 2*window.
@@ -126,8 +133,8 @@ def continuumFlattenSpec(waves, fluxes, window=50, fitplot=True):
     iin, iout = pyasl.slidingPolyResOutlier(waves, fluxes, points=window*2, deg=1, stdlim=3, mode='above', controlPlot=False)
     #print("Number of outliers: ", len(iout))
     #print("Indices of outliers: ", iout)
-    if len(iout) > 2*window:
-        raise ValueError('Too many outliers found, adjust stdlim.')
+    if len(iout) > 3*window:
+        raise ValueError('More than {0} outliers found, adjust stdlim'.format(3*window))
     # Remove outliers
     waves, fluxes = np.array(waves[iin]), np.array(fluxes[iin])
     
@@ -164,12 +171,19 @@ def continuumFlattenSpec(waves, fluxes, window=50, fitplot=True):
 ## MAIN PROGRAM BELOW
 ##
 
+#fitsfile = '../../../RG_spectra/tequila_201604/kplr7037405/140422.0024.ec.fits' # works
+fitsfile = '../../../KIC_8848288/tyc3559/TYC3559-02080-1.0024.ec.fits' # doesn't work
+#hdf5out = '../../../Starfish/7037405_Starfish/test.hdf5'
+hdf5out = '../../../KIC_8848288/test.hdf5'
+
 fitsspec = fits.open(fitsfile)
 fitsfluxes = fitsspec[0].data
 norders = len(fitsspec[0].data)
 nfluxpts = len(fitsspec[0].data[0])
 header = fitsspec[0].header
 fitswaves = getOrderWavelengths(fitsspec)
+TruncateOrders = False
+SaveFlatFluxes = False
 
 # Sort each order so it goes from lowest to highest wavelength
 # Note that this only sorts values within each order (the order of the orders is unchanged...)
@@ -180,20 +194,22 @@ for idx, (waves, fluxes) in enumerate(zip(fitswaves, fitsfluxes)):
 # Continuum flatten and plot the orders we care about
 flatwavelist = []
 flatfluxlist = []
-orderstart = 11
-orderstop = 92
+orderstart = 11    # red end
+orderstop = 85 #92 # blue end
 allrawwaves = fitswaves[orderstart:orderstop]
 allrawfluxes = fitsfluxes[orderstart:orderstop]
-
 for waves, fluxes in zip(allrawwaves, allrawfluxes):
     flatwaves, flatfluxes = continuumFlattenSpec(waves, fluxes, window=50, fitplot=False)
-#    trunc = int(len(flatwaves)/5)
-    flatwavelist.append(flatwaves)
-    flatfluxlist.append(flatfluxes)
-    plt.plot(flatwaves, flatfluxes)
-#    flatwavelist.append(flatwaves[trunc:-trunc])
-#    flatfluxlist.append(flatfluxes[trunc:-trunc])
-#    plt.plot(flatwaves[trunc:-trunc], flatfluxes[trunc:-trunc])
+    # option to cut the ends off each order
+    if TruncateOrders == True:
+        trunc = int(len(flatwaves)/5)
+        flatwavelist.append(flatwaves[trunc:-trunc])
+        flatfluxlist.append(flatfluxes[trunc:-trunc])
+        plt.plot(flatwaves[trunc:-trunc], flatfluxes[trunc:-trunc])
+    else:
+        flatwavelist.append(flatwaves)
+        flatfluxlist.append(flatfluxes)
+        plt.plot(flatwaves, flatfluxes)
     plt.axhline(y=1, ls=':', color='k')
     plt.axhline(y=0, ls=':', color='k')
 plt.show()
@@ -212,28 +228,21 @@ for fluxes in allflatfluxes:
     flatsigmas = np.sqrt(np.abs(fluxes))
     allflatsigmas.append(flatsigmas)
 
-hdf5file = '../../Starfish/7037405_Starfish/test.hdf5'
-hdf5spec = h5py.File(hdf5file, 'w')
+hdf5spec = h5py.File(hdf5out, 'w')
 
 rawflshdf5 = hdf5spec.create_dataset('fls', data=allrawfluxes)
 rawsigmashdf5 = hdf5spec.create_dataset('sigmas', data=allrawsigmas)
 rawwlshdf5 = hdf5spec.create_dataset('wls', data=allrawwaves)
 
-flatflshdf5 = hdf5spec.create_dataset('flatfls', data=allflatfluxes)
-flatsigmashdf5 = hdf5spec.create_dataset('flatsigmas', data=allflatsigmas)
-flatwlshdf5 = hdf5spec.create_dataset('flatwls', data=allflatwaves)
-
-#print(list(hdf5spec)) # ALL GOOD!
-#print(hdf5spec['fls'].shape)
-#print(hdf5spec['fls'].dtype)
-#print(hdf5spec['fls'].name)
-#print(hdf5spec['fls'].parent)
-#print(hdf5spec['flatfls'].shape)
-#print(hdf5spec['flatfls'].dtype)
-#print(hdf5spec['flatfls'].name)
-#print(hdf5spec['flatfls'].parent)
-
-print('Raw and flattened spectrum written to {0}'.format(hdf5file))
+# currently encountering a bug sometimes when trying to save flattened fluxes...
+# "TypeError: Object dtype dtype('O') has no native HDF5 equivalent" ??? cute.
+if SaveFlatFluxes == True:
+    flatflshdf5 = hdf5spec.create_dataset('flatfls', data=allflatfluxes)
+    flatsigmashdf5 = hdf5spec.create_dataset('flatsigmas', data=allflatsigmas)
+    flatwlshdf5 = hdf5spec.create_dataset('flatwls', data=allflatwaves)
+    print('Raw and flattened spectrum written to {0}'.format(hdf5out))
+else:
+    print('Raw spectrum only written to {0}'.format(hdf5out))
 
 hdf5spec.close()
 
