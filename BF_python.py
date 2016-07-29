@@ -43,6 +43,7 @@ gausspars:	your best initial guesses for fitting gaussians to the BF peaks
 OUTPUT
 outfile:	a file that will be created with 8 columns: BJD midpoint, orbital phase,
 			Kepler BJD, RV1, RV1 error, RV2, RV2 error
+bfoutfile:  a file that contains all the BF function data (raw RV, BF, gaussian model)
 
 IMMEDIATELY BELOW, IN THE CODE
 You need to specify whether you have APOGEE (near-IR) or "regular" (e.g., ARCES)
@@ -71,6 +72,7 @@ infiles =    '../../KIC_8848288/infiles.txt'
 bjdinfile =  '../../KIC_8848288/bjdfile.txt'
 gausspars =  '../../KIC_8848288/gaussfit.txt'
 outfile =    '../../KIC_8848288/rvs_revisited2_BF.txt'
+bfoutfile =  '../../KIC_8848288/bfoutfile.txt'
 
 # (the original infiles)
 #infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
@@ -272,7 +274,18 @@ g2.close()
 print('BJD, phase, and RVs written to %s.' % outfile)
 print('Use rvplotmaker.py to plot the RV curve.')
 
-#print(bffitlist[1])
+try:
+    bfout = open(bfoutfile, 'w')
+    for idx in range(1, nspec):
+        print('###', file=bfout)
+        print('# timestamp: {0}'.format(datetimelist[idx]), file=bfout)
+        print('# Uncorrected_RV, BF_amp, Gaussian_fit', file=bfout)
+        print('###', file=bfout)
+        for vel, amp, modamp in zip(bf_ind, bfsmoothlist[idx], bffitlist[idx][1]):
+            print(vel, amp, modamp, file=bfout)
+    bfout.close()
+except:
+    print('No BF outfile specified, not saving BF data to file')
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
