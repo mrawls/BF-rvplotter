@@ -1,5 +1,6 @@
 import numpy as np
 from astropy.io import fits
+from astropy.time import Time
 import matplotlib.pyplot as plt
 import glob
 from echelle_funcs import getOrderWavelengths
@@ -35,7 +36,54 @@ filelist = []
 with open(infiles) as f1:
     for line in f1:
         filelist.append(rootdir + line.rstrip())
+useRVdata = True # set True to overplot where each star's Ca line contribution should be
 #########
+
+if useRVdata == True:
+    # Read in orbital periods for each system
+    #periods = np.loadtxt('starnames.txt', comments='#', usecols=(1,), unpack=True)
+    # J/K I DON'T THINK WE NEED THAT...
+    # (1) Get timestamps for each observation
+    rtargets = []; reffiles = []; bjdsaves = []; bcvsaves = []
+    for file in filelist:
+        ### the below is SUPER GREAT but actually not relevant here ###
+        #fitsspec = fits.open(file)
+        #fitsspec.verify('silentfix')
+        #head = fitsspec[0].header
+        #utmiddle = head['UTMIDDLE']
+        #if '=' in utmiddle:
+        #    time = Time(utmiddle[1::], format='fits', scale='utc')
+        #else:
+        #    time = Time(head['DATE-OBS'][0:11] + utmiddle, format='fits', scale='utc')
+        #target = head['OBJNAME']
+        #print(target, time.jd)
+        #fitsspec.close()
+        ### the above is SUPER GREAT but actually not relevant here ###
+        # get date and bcv from jean's handy [target].info.txt files
+        fitsspec = fits.open(file)
+        target = fitsspec[0].header['OBJNAME']
+        fitsspec.close()
+        infofile = rootdir + 'kplr' + target + '/' + target + '.info.txt'
+        fullspecfiles = np.loadtxt(infofile, usecols=(0,), comments='#', dtype={'names':('fullspecfiles',),'formats':('|S29',)}, unpack=True)
+        bjds, bcvs = np.loadtxt(infofile, usecols=(2,4), comments='#', unpack=True)
+        for fullspecfile, bjd, bcv in zip(fullspecfiles, bjds, bcvs):
+            if file[-19::] in str(fullspecfile):
+                rtargets.append(target)
+                reffiles.append(file)
+                bjdsaves.append(bjd)
+                bcvsaves.append(bcv)  
+    if len(filelist) != len(reffiles):
+        raise IOError('Something bad happened when you tried to assign bjds and bcvs with the .info.txt files.')
+    # (2) use bjds to look up both stars' RVs in patrick's LaTeX file of doom
+    for target, bjd, bcv in zip(rtargets, bjdsaves, bcvsaves):
+        print(target, bjd, bcv)
+        # KEEP WORKING FROM HERE!!
+    # (3) properly combine RVs and BCVs to get predicted location of CaII H and CaII K
+    # (4) save this in ca2waves instead of the default values below
+    ca2waves = [3968.468, 3933.663] # UPDATE THIS APPROPRIATELY !!!
+else:
+    ca2waves = [3968.468, 3933.663]
+
 
 def plotThreeAtATime(filelist):
     '''
@@ -163,8 +211,8 @@ for star in strtargets:
             plt.plot(waves, fluxes+yoffset, color='#3182bd')
             yoffset += 1
             fitsspec.close()
-    plt.axvline(x=3968.468, ls=':', color='k')
-    plt.axvline(x=3933.663, ls=':', color='k')
+    plt.axvline(x=ca2waves[0], ls=':', color='k')
+    plt.axvline(x=ca2waves[1], ls=':', color='k')
     plt.axis([3910,3990,0,yoffset])
     plt.xlabel('Wavelength (\AA)')
     plt.show()
