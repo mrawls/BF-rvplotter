@@ -105,7 +105,7 @@ def getOrderWavelengths(hdu):
     fitswaves = np.array(fitswaves, dtype=np.float64)
     return fitswaves # numpy array
 
-def continuumFlattenSpec(waves, fluxes, id=0, window=50, fitplot=True):
+def continuumFlattenSpec(waves, fluxes, window=50, fitplot=True):
     '''
     Fits a spline to a spectrum and divides to continuum flatten it.
     Returns waves and fluxes/continuum with length = original_length - 2*window.
