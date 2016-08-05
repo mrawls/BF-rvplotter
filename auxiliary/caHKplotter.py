@@ -39,11 +39,9 @@ with open(infiles) as f1:
 useRVdata = True # set True to overplot where each star's Ca line contribution should be
 #########
 
+carest = [3968.468, 3933.663]
 if useRVdata == True:
-    # Read in orbital periods for each system
-    #periods = np.loadtxt('starnames.txt', comments='#', usecols=(1,), unpack=True)
-    # J/K I DON'T THINK WE NEED THAT...
-    # (1) Get timestamps for each observation
+    # (1) Get timestamps for each observation from jean's [target].info.txt files
     rtargets = []; reffiles = []; bjdsaves = []; bcvsaves = []
     for file in filelist:
         ### the below is SUPER GREAT but actually not relevant here ###
@@ -59,13 +57,12 @@ if useRVdata == True:
         #print(target, time.jd)
         #fitsspec.close()
         ### the above is SUPER GREAT but actually not relevant here ###
-        # get date and bcv from jean's handy [target].info.txt files
         fitsspec = fits.open(file)
         target = fitsspec[0].header['OBJNAME']
         fitsspec.close()
         infofile = rootdir + 'kplr' + target + '/' + target + '.info.txt'
         fullspecfiles = np.loadtxt(infofile, usecols=(0,), comments='#', dtype={'names':('fullspecfiles',),'formats':('|S29',)}, unpack=True)
-        bjds, bcvs = np.loadtxt(infofile, usecols=(2,4), comments='#', unpack=True)
+        bjds, bcvs = np.loadtxt(infofile, usecols=(3,4), comments='#', unpack=True)
         for fullspecfile, bjd, bcv in zip(fullspecfiles, bjds, bcvs):
             if file[-19::] in str(fullspecfile):
                 rtargets.append(target)
@@ -75,14 +72,37 @@ if useRVdata == True:
     if len(filelist) != len(reffiles):
         raise IOError('Something bad happened when you tried to assign bjds and bcvs with the .info.txt files.')
     # (2) use bjds to look up both stars' RVs in patrick's LaTeX file of doom
-    for target, bjd, bcv in zip(rtargets, bjdsaves, bcvsaves):
-        print(target, bjd, bcv)
-        # KEEP WORKING FROM HERE!!
+    texin = '../../../Rawls_tidesactivity/rvdata_gaulme2016.txt'
+    obsdates, rv1s, rv2s = np.loadtxt(texin, comments='%', usecols=(0,1,3), unpack=True)
+    targetlist = []; kepjdlist = []; bcvlist = []; rv1list = []; rv2list = []; newfilelist = []
+    for file, target, bjd, bcv in zip(filelist, rtargets, bjdsaves, bcvsaves):
+        kepjd = bjd - 2454833.
+        for obsdate, rv1, rv2 in zip(obsdates, rv1s, rv2s):
+            timecompare = kepjd - obsdate
+            if np.abs(timecompare) < 0.0001:
+                diff = kepjd - obsdate
+                #print(target, diff, rv1, rv2, bcv) # this looks good!
+                # save parallel lists
+                targetlist.append(target)
+                kepjdlist.append(kepjd)
+                bcvlist.append(bcv)
+                rv1list.append(rv1)
+                rv2list.append(rv2)
+                newfilelist.append(file)
     # (3) properly combine RVs and BCVs to get predicted location of CaII H and CaII K
-    # (4) save this in ca2waves instead of the default values below
-    ca2waves = [3968.468, 3933.663] # UPDATE THIS APPROPRIATELY !!!
-else:
-    ca2waves = [3968.468, 3933.663]
+    castar1list = []; castar2list = []
+    for bcv, rv1, rv2 in zip(bcvlist, rv1list, rv2list):
+        drv1 = rv1 - bcv
+        drv2 = rv2 - bcv
+        castar1 = [carest[0] + carest[0]*drv1/299792.458, carest[1] + carest[1]*drv1/299792.458]
+        castar2 = [carest[0] + carest[0]*drv2/299792.458, carest[1] + carest[1]*drv2/299792.458]
+        castar1list.append(castar1)
+        castar2list.append(castar2)
+    # (4) check and see if filelist from infiles and newfilelist from texin agree
+    print(len(filelist), len(newfilelist))
+    print('These files were in the original filelist but now are not: ', 
+            [x for x in filelist if x not in newfilelist])
+    filelist = newfilelist
 
 
 def plotThreeAtATime(filelist):
@@ -187,11 +207,13 @@ def plotThreeAtATime(filelist):
 #plotThreeAtATime(filelist)
 
 ## Use this if you want to make one figure per star with all its spectra stacked and normalized
-for star in strtargets:
+#fig = plt.figure() # UNCOMMENT FOR MULTIPANE PLOT
+for axdx, star in enumerate(strtargets):
     yoffset = 0
-    fig = plt.figure() # note you'll get a blank figure if the star isn't in any of the filenames
+    fig = plt.figure(figsize=(9,12)); ax = fig.add_subplot(111) # UNCOMMENT FOR ONE PLOT PER STAR
+    #ax = fig.add_subplot(3, 5, axdx+1) # UNCOMMENT FOR MULTIPANE PLOT
     plt.title(star)
-    for file in filelist:
+    for fidx, file in enumerate(filelist):
         if star in file:
             #print(star, file) # I can write nested loops yes I can
             fitsspec = fits.open(file)
@@ -209,11 +231,21 @@ for star in strtargets:
             # NORMALIZATION! look out kittens, these fluxes all go from 0 to 1 now
             fluxes = (fluxes-np.min(fluxes))/(np.max(fluxes)-np.min(fluxes))
             plt.plot(waves, fluxes+yoffset, color='#3182bd')
+            #print(file[-19:], star, fidx) # loop index consistency check!!
+            if useRVdata == True:
+                plt.plot(castar1list[fidx][0], yoffset+0.5, ls='None', marker='|', ms=25, mew=1.5, color='r')
+                plt.plot(castar1list[fidx][1], yoffset+0.5, ls='None', marker='|', ms=25, mew=1.5, color='r')
+                plt.plot(castar2list[fidx][0], yoffset+0.5, ls='None', marker='|', ms=25, mew=1.5, color='k')
+                plt.plot(castar2list[fidx][1], yoffset+0.5, ls='None', marker='|', ms=25, mew=1.5, color='k')
             yoffset += 1
             fitsspec.close()
-    plt.axvline(x=ca2waves[0], ls=':', color='k')
-    plt.axvline(x=ca2waves[1], ls=':', color='k')
-    plt.axis([3910,3990,0,yoffset])
+    if useRVdata == False:
+        plt.axvline(x=carest[0], ls=':', color='k')
+        plt.axvline(x=carest[1], ls=':', color='k')
+    plt.axis([3925,3975,-0.1,yoffset+0.1])
+    ax.set_yticklabels([])
+    ax.set_yticks([])
     plt.xlabel('Wavelength (\AA)')
-    plt.show()
+    plt.show() # UNCOMMENT FOR ONE PLOT PER STAR
+#plt.show() # UNCOMMENT FOR MULTIPANE PLOT
 
