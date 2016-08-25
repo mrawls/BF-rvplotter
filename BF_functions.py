@@ -220,16 +220,21 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
         if len(partest) == 6: ngauss = 2
         elif len(partest) == 9: ngauss = 3
         else: print('something is wrong with your gausspars file!')       
-        minpars=[0.002, float(partest[1])-threshold, 0,  0.002, float(partest[4])-threshold, 0]
-        maxpars=[1.2,   float(partest[1])+threshold, 25, 1.2,   float(partest[4])+threshold, 25]
+        # min and max pars for peak 1: amp, rv, width
+        minpars=[0.8, float(partest[1])-threshold, 0]
+        maxpars=[1.0,   float(partest[1])+threshold, 7]
+        # min and max pars for peak 2: amp, rv, width
+        minpars.extend([0.05, float(partest[4])-threshold, 0])
+        maxpars.extend([0.20, float(partest[4])+threshold, 40])
         if ngauss == 2:
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
                     minpars=minpars, maxpars=maxpars, quiet=True, shh=True)
         elif ngauss == 3:
+            # min and max pars for peak 3: amp, rv, width
             minpars.extend([0.002, float(partest[7])-threshold, 0])
-            maxpars.extend([1.2,   float(partest[7])+threshold, 25])
+            maxpars.extend([1.2,   float(partest[7])+threshold, 30])
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 

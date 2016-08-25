@@ -24,25 +24,25 @@ In practice, you will run this twice: once to do the initial BF, and then again
 to properly fit the peaks of each BF with a Gaussian.
 
 INPUT
-infiles:	single-column file with one FITS or TXT filename (w/ full path) per line
-			1st entry must be for the template star (e.g., arcturus or phoenix model)
-			(the same template is used to find RVs for both stars)
-			NO comments are allowed in this file
-			FUN FACT: unless APOGEE, these should be continuum-normalized to 1 !!!
-bjdinfile: 	columns 0,1,2 must be filename, BJD, BCV (e.g., from IRAF bcvcorr)
-			top row must be for the template star (e.g., arcturus)
-			(the 0th column is never used, but typically looks like infiles_BF.txt)
-			one line per observation
-			comments are allowed in this file using #
-gausspars:	your best initial guesses for fitting gaussians to the BF peaks
-			the parameters are [amp1, offset1, width1, amp2, offset2, width2]
-			the top line is ignored (template), but must have six values
-			one line per observation
-			comments are allowed in this file using #
+infiles:    single-column file with one FITS or TXT filename (w/ full path) per line
+            1st entry must be for the template star (e.g., arcturus or phoenix model)
+            (the same template is used to find RVs for both stars)
+            NO comments are allowed in this file
+            FUN FACT: unless APOGEE, these should be continuum-normalized to 1 !!!
+bjdinfile:     columns 0,1,2 must be filename, BJD, BCV (e.g., from IRAF bcvcorr)
+            top row must be for the template star (e.g., arcturus)
+            (the 0th column is never used, but typically looks like infiles_BF.txt)
+            one line per observation
+            comments are allowed in this file using #
+gausspars:    your best initial guesses for fitting gaussians to the BF peaks
+            the parameters are [amp1, offset1, width1, amp2, offset2, width2]
+            the top line is ignored (template), but must have six values
+            one line per observation
+            comments are allowed in this file using #
 
 OUTPUT
-outfile:	a file that will be created with 8 columns: BJD midpoint, orbital phase,
-			Kepler BJD, RV1, RV1 error, RV2, RV2 error
+outfile:    a file that will be created with 8 columns: BJD midpoint, orbital phase,
+            Kepler BJD, RV1, RV1 error, RV2, RV2 error
 bfoutfile:  a file that contains all the BF function data (raw RV, BF, gaussian model)
 
 IMMEDIATELY BELOW, IN THE CODE
@@ -71,8 +71,8 @@ both in days, and the constant RV and BCV of whatever template you are using.
 infiles =    '../../KIC_8848288/infiles.txt'
 bjdinfile =  '../../KIC_8848288/bjdfile.txt'
 gausspars =  '../../KIC_8848288/gaussfit.txt'
-outfile =    '../../KIC_8848288/rvs_revisited2_BF.txt'
-bfoutfile =  '../../KIC_8848288/bfoutfile.txt'
+outfile =    '../../KIC_8848288/rvs_revisited3_BF.txt'
+bfoutfile =  '../../KIC_8848288/bfoutfile3.txt'
 
 # (the original infiles)
 #infiles = '../../TelFit/9246715_telfit/infiles_BF_shift.txt'
@@ -111,7 +111,7 @@ rvstd = 0; bcvstd = 0 # model template
 #rvstd = 0; bcvstd = 13.5073 # joni's OA with self-template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
-amp = 5.0		    # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
+amp = 5.0            # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
 smoothstd = 1.0 #1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
 #w00 = 5400          # starting wavelength for new grid
 #n = 38750           # number of wavelength points for new grid
@@ -123,8 +123,9 @@ m = 171             # length of the BF (must be longer if RVs are far from 0)
 ## good values for ARCES & TRES together:
 #w00 = 5400; n = 38750; stepV = 1.7
 ## good values for 8848288 (HET low & high res):
-#w00 = 4408; n = 42000; stepV = 2.0
-w00 = 4408; n = 55000; stepV = 1.5
+#w00 = 4408; n = 55000; stepV = 1.5
+#w00 = 4485; n = 53000; stepV = 1.5
+w00 = 4485; n = 80000; stepV = 1.5 # testing larger, redder wavelength range
 
 # STUFF TO MAKE PLOTS LOOK NICE
 #rvneg = -69; rvpos = 69; ymin = -0.05; ymax = 0.45 # 9246715
@@ -138,7 +139,7 @@ w00 = 4408; n = 55000; stepV = 1.5
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
 #rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 #rvneg = -59; rvpos = 59; ymin = -0.05; ymax = 0.30 # 5786154
-rvneg = -59; rvpos = 19; ymin = -0.15; ymax = 0.50 # (8848288)
+rvneg = -59; rvpos = 19; ymin = -0.05; ymax = 1.05 #ymin = -0.15; ymax = 0.50 # (8848288)
 
 #rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
 
@@ -193,21 +194,26 @@ singularvals = svd.getSingularValues()
 bflist = []
 bfsmoothlist = []
 for i in range (0, nspec):
-	# Obtain the broadening function
-	bf = svd.getBroadeningFunction(newspeclist[i]) # this is a full matrix
-	bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
-	# Smooth the array-like broadening function
-	# 1ST LINE - python 2.7 with old version of pandas; 2ND LINE - python 3.5 with new version of pandas
-	#bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
-	bfsmooth = amp*pd.Series(bfarray).rolling(window=5, win_type='gaussian', center=True).mean(std=smoothstd)
-	# The rolling window makes nans at the start because it's a punk.
-	for j in range(0,len(bfsmooth)):
-		if np.isnan(bfsmooth[j]) == True:
-			bfsmooth[j] = 0
-		else:
-		    bfsmooth[j] = bfsmooth[j]
-	bflist.append(bf)
-	bfsmoothlist.append(bfsmooth)
+    # Obtain the broadening function
+    bf = svd.getBroadeningFunction(newspeclist[i]) # this is a full matrix
+    bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
+    # Smooth the array-like broadening function
+    # 1ST LINE - python 2.7 with old version of pandas; 2ND LINE - python 3.5 with new version of pandas
+    #bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
+    bfsmooth = amp*pd.Series(bfarray).rolling(window=5, win_type='gaussian', center=True).mean(std=smoothstd)
+    # The rolling window makes nans at the start because it's a punk.
+    for j in range(0,len(bfsmooth)):
+        if np.isnan(bfsmooth[j]) == True:
+            bfsmooth[j] = 0
+        else:
+            bfsmooth[j] = bfsmooth[j]
+    bflist.append(bf)
+    bfsmoothlist.append(bfsmooth)
+    
+bfnormlist = []
+for a in bfsmoothlist:
+    bfnormlist.append((a-np.min(a))/(np.max(a)-np.min(a)))
+
 # Obtain the indices in RV space that correspond to the BF
 bf_ind = svd.getRVAxis(r, 1) + rvstd - bcvstd
 
@@ -229,17 +235,18 @@ plt.xlabel('Radial Velocity (km s$^{-1}$)')
 plt.ylabel('Broadening Function (arbitrary amplitude)')
 yoffset = 0.0
 for i in range(1, nspec):
-	plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
-	yoffset = yoffset + 0.4
+    plt.plot(bf_ind, bfsmoothlist[i]+yoffset, color='b')
+    yoffset = yoffset + 0.4
 plt.show()
 
 # FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
 # you have to have pretty decent guesses in the gausspars file for this to work.
-bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold)
+#bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold)
+bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfnormlist, bf_ind, threshold)
 rvraw1 = []; rvraw2 = []; rvraw1_err = []; rvraw2_err = []
 rvraw1.append(0), rvraw2.append(0), rvraw1_err.append(0), rvraw2_err.append(0)
 for i in range(1, len(bffitlist)):
-    rvraw1.append(bffitlist[i][0][1])
+    rvraw1.append(bffitlist[i][0][1]) # [0,1,2] is amp,rv,width for star 1; [4,5,6] is same for star2
     rvraw2.append(bffitlist[i][0][4])
     rvraw1_err.append(bffitlist[i][2][1])
     rvraw2_err.append(bffitlist[i][2][4])
@@ -286,37 +293,47 @@ try:
     bfout.close()
 except:
     print('No BF outfile specified, not saving BF data to file')
+    
+# handy little gaussian function maker
+def gaussian(x, amp, mu, sig): # i.e., (xarray, amp, rv, width)
+    return amp * np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
 # PLOT THE FINAL SMOOTHED BFS + GAUSSIAN FITS IN INDIVIDUAL PANELS
 # manually adjust this multi-panel plot based on how many spectra you have
 #plt.figure(4)
-windowcols = 4		                        # how many window columns there should be
+windowcols = 4                                # how many window columns there should be
 #windowrows = 6
 windowrows = int([np.rint((nspec-1)/windowcols) if (np.float(nspec-1)/windowcols)%windowcols == 0 else np.rint((nspec-1)/windowcols)+1][0])
 xmin = rvneg
 xmax = rvpos
+#gaussxs = np.arange(-200, 200, 0.1)
 fig = plt.figure(1, figsize=(15,10))
 fig.text(0.5, 0.04, 'Uncorrected Radial Velocity (km s$^{-1}$)', ha='center', va='center', size=26)
 fig.text(0.07, 0.5, 'Broadening Function', ha='center', va='center', size=26, rotation='vertical')
 for i in range (1,nspec):
-	ax = fig.add_subplot(windowrows, windowcols,i) # out of range if windowcols x windowrows < nspec
-	ax.yaxis.set_major_locator(MultipleLocator(0.2))
-	if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21 and i!=25:
-		ax.set_yticklabels(())
-	#if i!=20 and i!=21 and i!=22 and i!=23 and i!=24 and i!=25:
-	if i < nspec-windowrows:
-	#if i!=13 and i!=14 and i!=15 and i!=16:
-		ax.set_xticklabels(())
-	plt.subplots_adjust(wspace=0, hspace=0)
-	plt.axis([xmin, xmax, ymin, ymax])
-	plt.tick_params(axis='both', which='major', labelsize=14)
-	plt.text(xmax - 0.25*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
-	plt.text(xmax - 0.35*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
-	plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, ls='-', label='Smoothed BF')
-	plt.plot(bf_ind, bffitlist[i][1], color='#e34a33', lw=2, ls='--', label='Gaussian fit')
-	# OPTION TO PLOT VERTICAL LINE AT ZERO
-	plt.axvline(x=0, color='0.75')	
-	# print legend
-	if i==nspec-1: ax.legend(bbox_to_anchor=(2.1,0.7), loc=1, borderaxespad=0., 
-						frameon=False, handlelength=3, prop={'size':20})
+    ax = fig.add_subplot(windowrows, windowcols,i) # out of range if windowcols x windowrows < nspec
+    ax.yaxis.set_major_locator(MultipleLocator(0.2))
+    if i!=1 and i!=5 and i!=9 and i!=13 and i!=17 and i!=21 and i!=25:
+        ax.set_yticklabels(())
+    #if i!=20 and i!=21 and i!=22 and i!=23 and i!=24 and i!=25:
+    if i < nspec-windowrows:
+    #if i!=13 and i!=14 and i!=15 and i!=16:
+        ax.set_xticklabels(())
+    plt.subplots_adjust(wspace=0, hspace=0)
+    plt.axis([xmin, xmax, ymin, ymax])
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.text(xmax - 0.25*(np.abs(xmax-xmin)), 0.8*ymax, '%.3f $\phi$' % (phase[i]), size=12)
+    plt.text(xmax - 0.35*(np.abs(xmax-xmin)), 0.6*ymax, '%s' % (datetimelist[i].iso[0:10]), size=12)
+    #plt.plot(bf_ind, bfsmoothlist[i], color='k', lw=1.5, ls='-', label='Smoothed BF')
+    plt.plot(bf_ind, bfnormlist[i], color='k', lw=1.5, ls='-', label='Normalized Smoothed BF')
+    plt.plot(bf_ind, bffitlist[i][1], color='b', lw=2, ls='--', label='Two Gaussian fit')
+    gauss1 = gaussian(bf_ind, bffitlist[i][0][0], bffitlist[i][0][1], bffitlist[i][0][2])
+    gauss2 = gaussian(bf_ind, bffitlist[i][0][3], bffitlist[i][0][4], bffitlist[i][0][5])
+    plt.plot(bf_ind, gauss1, color='#e34a33', lw=2, ls='--')#, label='Gaussian fit 1')
+    plt.plot(bf_ind, gauss2, color='#fdbb84', lw=2, ls='--')#, label='Gaussian fit 2')
+    # OPTION TO PLOT VERTICAL LINE AT ZERO
+    plt.axvline(x=0, color='0.75')    
+    # print legend
+    if i==nspec-1: ax.legend(bbox_to_anchor=(2.6,0.7), loc=1, borderaxespad=0., 
+                        frameon=False, handlelength=3, prop={'size':20})
 plt.show()
