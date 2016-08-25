@@ -1,4 +1,0 @@
-C***************** input parameters for specsynth *****************************
-30000   R_fac - the spectrograph resolution R=lambda/(Delta lambda)
-3.0     conwindo -  # of inst. profile sigma to include in convolution 
-3       resfac - (odd integer) sample rate factor for convolution arrays
