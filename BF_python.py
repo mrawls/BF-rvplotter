@@ -83,8 +83,10 @@ bfoutfile =  '../../KIC_8848288/bfoutfile3.txt'
 # STUFF YOU NEED TO DEFINE CORRECTLY !!!
 isAPOGEE = False        # toggle to use near-IR stuff, or not
 SpecPlot = True         # toggle to plot spectra before BFs, or not
-threshold = 10          # margin in km/s for fitting each gaussian's position
 bjdoffset = 2454833.    # difference between real BJDs and 'bjdfunny' (truncated BJDs)
+amplimits = [0.8,1, 0.05,0.2] # limits for gaussian normalized amplitude [min1,max1,min2,max2]
+threshold = 10           # margin for gaussian position (raw RV in km/s)
+widlimits = [0,7, 0,40]  # limits for gaussian width (km/s) [min1,max1,min2,max2]
 
 # ORBITAL PERIOD AND ZEROPOINT !!!
 #period = 171.277697; BJD0 = 2455170.514777 # 9246715
@@ -111,7 +113,6 @@ rvstd = 0; bcvstd = 0 # model template
 #rvstd = 0; bcvstd = 13.5073 # joni's OA with self-template
 
 # PARAMETERS FOR THE BROADENING FUNCTION (IMPORTANT PAY ATTENTION !!!)
-amp = 5.0            # arbitrary amplitude to stretch the smoothed BFs by in y, for clarity
 smoothstd = 1.0 #1.5     # stdev of Gaussian to smooth BFs by (~slit width in pixels)
 #w00 = 5400          # starting wavelength for new grid
 #n = 38750           # number of wavelength points for new grid
@@ -139,7 +140,7 @@ w00 = 4485; n = 80000; stepV = 1.5 # testing larger, redder wavelength range
 #rvneg = -69; rvpos = 49; ymin = -0.05; ymax = 0.30 # 9970396
 #rvneg = -70; rvpos = 70; ymin = -0.05; ymax = 0.20 # 8054233
 #rvneg = -59; rvpos = 59; ymin = -0.05; ymax = 0.30 # 5786154
-rvneg = -59; rvpos = 19; ymin = -0.05; ymax = 1.05 #ymin = -0.15; ymax = 0.50 # (8848288)
+rvneg = -64; rvpos = 24; ymin = -0.05; ymax = 1.05 #ymin = -0.15; ymax = 0.50 # (8848288)
 
 #rvneg = -49; rvpos = 99; ymin = -0.15; ymax = 0.6 # test for joni OA
 
@@ -199,8 +200,8 @@ for i in range (0, nspec):
     bfarray = svd.getBroadeningFunction(newspeclist[i], asarray=True)
     # Smooth the array-like broadening function
     # 1ST LINE - python 2.7 with old version of pandas; 2ND LINE - python 3.5 with new version of pandas
-    #bfsmooth = amp*pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
-    bfsmooth = amp*pd.Series(bfarray).rolling(window=5, win_type='gaussian', center=True).mean(std=smoothstd)
+    #bfsmooth = pd.rolling_window(bfarray, window=5, win_type='gaussian', std=smoothstd, center=True)
+    bfsmooth = pd.Series(bfarray).rolling(window=5, win_type='gaussian', center=True).mean(std=smoothstd)
     # The rolling window makes nans at the start because it's a punk.
     for j in range(0,len(bfsmooth)):
         if np.isnan(bfsmooth[j]) == True:
@@ -242,7 +243,7 @@ plt.show()
 # FIT THE SMOOTHED BF PEAKS WITH TWO GAUSSIANS
 # you have to have pretty decent guesses in the gausspars file for this to work.
 #bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold)
-bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfnormlist, bf_ind, threshold)
+bffitlist = bff.gaussparty(gausspars, nspec, filenamelist, bfnormlist, bf_ind, amplimits, threshold, widlimits)
 rvraw1 = []; rvraw2 = []; rvraw1_err = []; rvraw2_err = []
 rvraw1.append(0), rvraw2.append(0), rvraw1_err.append(0), rvraw2_err.append(0)
 for i in range(1, len(bffitlist)):
@@ -270,7 +271,8 @@ print('# Target BJD and BCV info (bjdinfile): {0}'.format(bjdinfile), file=g2)
 print('# Gaussian fit guesses (gausspars):    {0}'.format(gausspars), file=g2)
 print('#', file=g2)
 print('# BF parameters: w00 = {0}; n = {1}; stepV = {2}'.format(w00, n, stepV), file=g2)
-print('# BF parameters: amp = {0}; smoothstd = {1}; m = {2}'.format(amp, smoothstd, m), file=g2)
+print('# BF parameters: smoothstd = {0}; m = {1}'.format(smoothstd, m), file=g2)
+print('# gaussfit: amplimits = {0}; threshold = {1}, widlimits = {2}'.format(amplimits, threshold, widlimits), file=g2)
 print('#', file=g2)
 print('# time, phase, adjusted_time, RV1 [km/s], error1 [km/s], RV2 [km/s], error2 [km/s]', file=g2)
 print('#', file=g2)
@@ -286,6 +288,8 @@ try:
     for idx in range(1, nspec):
         print('###', file=bfout)
         print('# timestamp: {0}'.format(datetimelist[idx]), file=bfout)
+        print('# Gaussian 1 [amp, RV +/- err, wid]: [{0:.2f}, {1:.2f} +/- {2:.2f}, {3:.2f}]'.format(bffitlist[i][0][0], rvraw1[i], rvraw1_err[i], bffitlist[i][0][2]), file=bfout)
+        print('# Gaussian 2 [amp, RV +/- err, wid]: [{0:.2f}, {1:.2f} +/- {2:.2f}, {3:.2f}]'.format(bffitlist[i][0][3], rvraw2[i], rvraw2_err[i], bffitlist[i][0][5]), file=bfout)
         print('# Uncorrected_RV, BF_amp, Gaussian_fit', file=bfout)
         print('###', file=bfout)
         for vel, amp, modamp in zip(bf_ind, bfsmoothlist[idx], bffitlist[idx][1]):

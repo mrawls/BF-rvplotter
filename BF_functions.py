@@ -99,7 +99,7 @@ def read_specfiles(infiles = 'infiles_BF.txt', bjdinfile = 'bjds_baryvels.txt', 
     Returns     nspec, filenamelist, datetimelist, wavelist, speclist
     '''
     f1 = open(infiles)
-    print('Reading files from 1st column in %s' % infiles)
+    print('Reading the files listed in %s' % infiles)
     #print('The first one had better be your template spectrum.')
     print(' ')
     speclist = []; wavelist = []
@@ -186,7 +186,7 @@ def ProcessAPOGEEFITS(hdu):
     wave = wave[::-1]
     return wave, spec
 
-def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=10):
+def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, amplimits, threshold, widlimits):
     '''
     Fits 2 or 3 gaussians to some data
     '''
@@ -221,20 +221,24 @@ def gaussparty(gausspars, nspec, filenamelist, bfsmoothlist, bf_ind, threshold=1
         elif len(partest) == 9: ngauss = 3
         else: print('something is wrong with your gausspars file!')       
         # min and max pars for peak 1: amp, rv, width
-        minpars=[0.8, float(partest[1])-threshold, 0]
-        maxpars=[1.0,   float(partest[1])+threshold, 7]
+        #minpars=[0.8, float(partest[1])-threshold, 0]
+        #maxpars=[1.0,   float(partest[1])+threshold, 7]
         # min and max pars for peak 2: amp, rv, width
-        minpars.extend([0.05, float(partest[4])-threshold, 0])
-        maxpars.extend([0.20, float(partest[4])+threshold, 40])
+        #minpars.extend([0.05, float(partest[4])-threshold, 0])
+        #maxpars.extend([0.20, float(partest[4])+threshold, 40])
+        minpars = [amplimits[0], float(partest[1])-threshold, widlimits[0]]
+        maxpars = [amplimits[1], float(partest[1])+threshold, widlimits[1]]
+        minpars.extend([amplimits[2], float(partest[4])-threshold, widlimits[2]])
+        maxpars.extend([amplimits[3], float(partest[4])+threshold, widlimits[3]])
         if ngauss == 2:
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
                     minpars=minpars, maxpars=maxpars, quiet=True, shh=True)
         elif ngauss == 3:
-            # min and max pars for peak 3: amp, rv, width
-            minpars.extend([0.002, float(partest[7])-threshold, 0])
-            maxpars.extend([1.2,   float(partest[7])+threshold, 30])
+            # min and max pars for peak 3: amp, rv, width (hardwired)
+            minpars.extend([0.05, float(partest[7])-threshold, 0])
+            maxpars.extend([1.0,  float(partest[7])+threshold, 30])
             bffit = gf.multigaussfit(bf_ind, bfsmoothlist[i], ngauss=ngauss, 
                     params=partest, err=error_array,
                     limitedmin=[True,True,True], limitedmax=[True,True,True], 
